@@ -103,11 +103,11 @@ export function createScreenUi(callbacks: UiCallbacks): ScreenUi {
   const lower = buildCatalogue(callbacks);
   const topObject = new CSS3DObject(upper);
   topObject.scale.setScalar(DEVICE.uiScale);
-  topObject.position.set(0, DEVICE.screenCenterY + DEVICE.hingeRadius, DEVICE.upperThickness / 2 + 0.006);
+  topObject.position.set(0, DEVICE.screenCenterY + DEVICE.hingeRadius, DEVICE.upperInnerSurfaceZ + px(2.1));
   const bottomObject = new CSS3DObject(lower);
   bottomObject.scale.setScalar(DEVICE.uiScale);
   bottomObject.rotation.x = -Math.PI / 2;
-  bottomObject.position.set(0, DEVICE.lowerSurfaceY + px(2.15), DEVICE.lowerScreenCenterZ);
+  bottomObject.position.set(0, DEVICE.lowerSurfaceY + px(4.75), DEVICE.lowerScreenCenterZ);
 
   const setFocused = (index: number): void => {
     const work = getWork(index);

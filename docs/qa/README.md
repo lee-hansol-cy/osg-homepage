@@ -1,9 +1,13 @@
 # OSG desktop QA evidence
 
-These captures are the durable 1920 × 1080 verification set for the source-faithful desktop revision.
+These true-PNG captures are the durable 1920 × 1080 verification set for the source-faithful desktop revision. Physical shell radii use exactly 50% of the latest CSS values, with the D-pad's supplied 8/7px corners retained as the explicit control exception; CSS3D UI radii are unchanged.
 
 - `osg-final-open-1920.png`: settled 170-degree open state, work 05 selected.
+- `osg-final-dpad-down-pressed-1920.png`: down-direction D-pad tilt while the catalogue advances from work 05 to work 06.
+- `osg-final-capsule-pressed-1920.png`: a right capsule button inside its dark-purple cutout at the deeper 2.6px press travel.
 - `osg-final-closed-1920.png`: settled closed state at the source 800 × 540 envelope.
 - `osg-final-hinge-mid-1920.png`: hinge in transit with CSS3D screen content hidden to prevent bleed/intersection.
+
+The upper/lower display bezels share the same 10px CSS radius, and the upper inset is a real 8px continuous bevel bridge rather than a background-visible gap. Closed-state stability was checked across four captures 100ms apart. Their decoded RGB pixels were identical, confirming that the thicker concave lid contains the internal structures without visible depth flicker.
 
 The browser scenarios, exact type/geometry contracts, build results, limitations, and all user-mandated fidelity notes are recorded in `.debug-journal.md` and `.codex/session-logs/2026-07-17T23-06-22+09-00-osg-folding-portfolio.json`.

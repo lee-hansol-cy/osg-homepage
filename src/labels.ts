@@ -89,15 +89,19 @@ export function createUvLabel(options: LabelOptions): THREE.Mesh {
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = 16;
+  texture.generateMipmaps = false;
   texture.magFilter = THREE.LinearFilter;
-  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  texture.minFilter = THREE.LinearFilter;
   texture.needsUpdate = true;
   const material = new THREE.MeshBasicMaterial({
     map: texture,
     transparent: true,
     opacity: 1,
-    alphaTest: 0.01,
+    alphaTest: 0.04,
     depthWrite: false,
+    polygonOffset: true,
+    polygonOffsetFactor: -4,
+    polygonOffsetUnits: -4,
     toneMapped: false,
     side: THREE.DoubleSide,
   });

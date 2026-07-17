@@ -1,17 +1,19 @@
 {
   "session_id": "019f6fa6-f311-74b1-a897-8a4fd05e2c1a",
   "created_at": "2026-07-17T23:06:22+09:00",
-  "updated_at": "2026-07-17T23:16:53+09:00",
+  "updated_at": "2026-07-18T02:18:00+09:00",
   "workspace_root": "/Users/hansol/Documents/01 프로젝트/Personal Works/OSG/OSG Homepage",
   "branch": "codex/osg-folding-portfolio",
   "goal": "Build and document a source-faithful interactive Three.js folding OSG portfolio device for the 1920x1080 desktop frame.",
-  "progress_summary": "Rebuilt the enclosure, hinge, controls, SVG marks, materials, typography, CSS3D UI, and interaction model from the supplied Figma/SVG dimensions. Recorded all user corrections and verified the finished desktop behavior in the live browser.",
+  "progress_summary": "Reconciled the latest CSS exterior radii and bezel dimensions, added a continuous 8px upper inset bevel bridge, corrected the thicker back-skin contact placement, and verified the supplied character-logo engraving in live open/hinge/closed renders.",
   "implemented_features": [
     "Single 20:1 Figma-pixel-to-world-unit geometry contract",
     "Continuous articulated 170-degree hinge with exact 95/610/95 source envelopes",
-    "Upper and lower shell thicknesses and 4px/16px/2px radius rules",
+    "Upper and lower shell thicknesses with inset-matched 60/58px continuous exterior radii",
+    "Continuous 8px upper inset bevel bridge with corrected back-skin outer contact",
+    "Equal 10px CSS-radius display bezels and physically bounded lower bevel",
     "Recessed speakers and upper display surround, glossy ABS, chrome badge, optical camera lens",
-    "Supplied SVG geometry for placeholder, inner badge, and source-derived lid engraving",
+    "Supplied SVG geometry for placeholder, inner badge, and CSS character-logo lid engraving",
     "OSG Capsules 300/400/700 with cap-height-aware 17px and 11px UV label rasterization",
     "Exact capsule buttons, D-pad silhouette and arrows, motion toggle, theme control, ports, and LEDs",
     "Square active displays with Lisse-smoothed rounded UI elements",
@@ -42,22 +44,27 @@
     "docs/qa/README.md",
     "docs/qa/osg-final-open-1920.png",
     "docs/qa/osg-final-closed-1920.png",
-    "docs/qa/osg-final-hinge-mid-1920.png"
+    "docs/qa/osg-final-hinge-mid-1920.png",
+    "docs/qa/osg-final-dpad-down-pressed-1920.png",
+    "docs/qa/osg-final-capsule-pressed-1920.png",
+    "public/assets/osg-main-logo.svg",
+    "tests/geometry.test.ts"
   ],
   "verification": {
     "typecheck": "bun run check: pass",
-    "tests": "bun test: 6 pass, 0 fail, 30 expect calls",
+    "tests": "bun test: 9 pass, 0 fail, 55 expect calls",
     "production_build": "bun run build: pass; only the existing Vite 500 kB chunk advisory remains",
-    "browser_console": "0 entries after hinge, physical control, wheel, keyboard, toggle, and theme scenarios",
+    "browser_console": "0 entries after hinge, physical control, toggle, theme, and closed-state capture scenarios",
     "browser_interactions": "wheel 4->5->4; keyboard horizontal unchanged and vertical changes; D-pad horizontal unchanged and vertical changes; right buttons 0/1/2; theme and motion pass",
-    "visual_diff": "1920x1080 dimensions match; 69/100 against the flat source raster, with expected PBR/depth differences"
+    "visual_diff": "Five 1920x1080 captures match; closed-state RGB is stable across four 100ms frames; the corrected engraving, bezel equality, and inset bridge were visually inspected at an angled open state"
   },
   "git_actions": [
     "Worked on codex/osg-folding-portfolio from clean base fa94767",
     "Prepared one coherent source, tests, documentation, session-log, and QA-evidence checkpoint",
     "Created private GitHub repository https://github.com/lee-hansol-cy/osg-homepage",
     "Configured origin and gh auth setup-git",
-    "Pushed 32de70af3f8e12de9a9f15ea62b75d192fa2c691 to origin/codex/osg-folding-portfolio"
+    "Pushed 32de70af3f8e12de9a9f15ea62b75d192fa2c691 to origin/codex/osg-folding-portfolio",
+    "Committed the 2026-07-18 exterior correction checkpoint locally; no push performed"
   ],
   "next_actions": [
     "Replace the source placeholder with final portfolio thumbnails when supplied",
@@ -66,7 +73,7 @@
   ],
   "open_questions": [
     "A distinct closed-lid SVG was not present; the supplied OSG silhouette is reused for the engraving",
-    "Independent reviewer agents could not run because the account-level agent quota was exhausted; direct browser QA and automated checks completed successfully",
+    "Independent reviewer agents were attempted after the latest pass but account-level model capacity was exhausted; direct angled browser QA, interaction QA, automated checks, and fresh 1920x1080 artifacts completed successfully",
     "Repository is private by default; make it public only if portfolio source visibility is intended"
   ],
   "status": "pushed_private_repository"

@@ -1,0 +1,70 @@
+{
+  "session_id": "019f6fa6-f311-74b1-a897-8a4fd05e2c1a",
+  "created_at": "2026-07-17T23:06:22+09:00",
+  "updated_at": "2026-07-17T23:06:22+09:00",
+  "workspace_root": "/Users/hansol/Documents/01 프로젝트/Personal Works/OSG/OSG Homepage",
+  "branch": "codex/osg-folding-portfolio",
+  "goal": "Build and document a source-faithful interactive Three.js folding OSG portfolio device for the 1920x1080 desktop frame.",
+  "progress_summary": "Rebuilt the enclosure, hinge, controls, SVG marks, materials, typography, CSS3D UI, and interaction model from the supplied Figma/SVG dimensions. Recorded all user corrections and verified the finished desktop behavior in the live browser.",
+  "implemented_features": [
+    "Single 20:1 Figma-pixel-to-world-unit geometry contract",
+    "Continuous articulated 170-degree hinge with exact 95/610/95 source envelopes",
+    "Upper and lower shell thicknesses and 4px/16px/2px radius rules",
+    "Recessed speakers and upper display surround, glossy ABS, chrome badge, optical camera lens",
+    "Supplied SVG geometry for placeholder, inner badge, and source-derived lid engraving",
+    "OSG Capsules 300/400/700 with cap-height-aware 17px and 11px UV label rasterization",
+    "Exact capsule buttons, D-pad silhouette and arrows, motion toggle, theme control, ports, and LEDs",
+    "Square active displays with Lisse-smoothed rounded UI elements",
+    "Physical press-and-return motion without scale changes",
+    "Wheel, vertical keyboard, vertical D-pad, right-button, toggle, theme, and hinge interactions",
+    "No ground or contact shadow; desktop-only 1920x1080 composition"
+  ],
+  "files_touched": [
+    "DESIGN.md",
+    "README.md",
+    ".debug-journal.md",
+    "package.json",
+    "public/assets/osg-logo.svg",
+    "public/assets/osg-logo-white.svg",
+    "src/config.ts",
+    "src/controls.ts",
+    "src/device.ts",
+    "src/geometry.ts",
+    "src/labels.ts",
+    "src/main.ts",
+    "src/style.css",
+    "src/svg-logos.ts",
+    "src/tokens.css",
+    "src/ui.ts",
+    "tests/config.test.ts",
+    "tests/controls.test.ts",
+    "tests/labels.test.ts",
+    "docs/qa/README.md",
+    "docs/qa/osg-final-open-1920.png",
+    "docs/qa/osg-final-closed-1920.png",
+    "docs/qa/osg-final-hinge-mid-1920.png"
+  ],
+  "verification": {
+    "typecheck": "bun run check: pass",
+    "tests": "bun test: 6 pass, 0 fail, 30 expect calls",
+    "production_build": "bun run build: pass; only the existing Vite 500 kB chunk advisory remains",
+    "browser_console": "0 entries after hinge, physical control, wheel, keyboard, toggle, and theme scenarios",
+    "browser_interactions": "wheel 4->5->4; keyboard horizontal unchanged and vertical changes; D-pad horizontal unchanged and vertical changes; right buttons 0/1/2; theme and motion pass",
+    "visual_diff": "1920x1080 dimensions match; 69/100 against the flat source raster, with expected PBR/depth differences"
+  },
+  "git_actions": [
+    "Worked on codex/osg-folding-portfolio from clean base fa94767",
+    "Prepared one coherent source, tests, documentation, session-log, and QA-evidence checkpoint",
+    "No upstream is configured and no push was requested"
+  ],
+  "next_actions": [
+    "Replace the source placeholder with final portfolio thumbnails when supplied",
+    "Configure an upstream and push only when explicitly requested",
+    "Begin tablet/mobile work only after desktop fidelity is accepted"
+  ],
+  "open_questions": [
+    "A distinct closed-lid SVG was not present; the supplied OSG silhouette is reused for the engraving",
+    "Independent reviewer agents could not run because the account-level agent quota was exhausted; direct browser QA and automated checks completed successfully"
+  ],
+  "status": "committed_checkpoint"
+}

@@ -24,22 +24,17 @@
 
 :root {
   --color-canvas: #fafafa;
-  --color-canvas-bright: #ffffff;
-  --color-canvas-blush: #f8f3f7;
   --color-shell: #ff81ea;
   --color-shell-deep: #f02bd1;
   --color-control: #fbe1f6;
   --color-ink: #100b10;
   --color-screen: #ffffff;
   --color-divider: #ded9df;
-  --space-1: 4px;
   --space-2: 8px;
-  --space-3: 12px;
   --space-4: 16px;
-  --space-6: 24px;
   --motion-press: 120ms;
   --motion-catalogue: 180ms;
-  --motion-screen: 260ms;
+  --motion-screen: 180ms;
   --row-height: 36px;
   --row-focused: 64px;
   font-family: "OSG Capsules", sans-serif;
@@ -50,7 +45,5 @@
 
 :root.is-dark {
   --color-canvas: #171217;
-  --color-canvas-bright: #241b24;
-  --color-canvas-blush: #0f0b10;
   --color-ink: #fff8fe;
 }

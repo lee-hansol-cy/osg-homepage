@@ -1,6 +1,19 @@
 import * as THREE from "three";
-import { DEVICE } from "./config";
-import { crossShape, cylinder, extrudedShape, materials, panelShape, roundedMesh, roundedRectShape } from "./geometry";
+import { DEVICE, PHYSICAL, px } from "./config";
+import { catalogueStepForDpad, type DpadDirection } from "./controls";
+import {
+  circleHole,
+  crossShape,
+  cylinderMesh,
+  extrudedMesh,
+  flatRoundedMesh,
+  frameMesh,
+  materials,
+  panelShape,
+  roundedBox,
+  roundedRectHole,
+  roundedRectShape,
+} from "./geometry";
 import { createUvLabel } from "./labels";
 
 export type DeviceAction = "previous" | "next" | "artworks" | "fonts" | "tools" | "toggle" | "theme";
@@ -9,244 +22,453 @@ export type DeviceModel = {
   readonly root: THREE.Group;
   readonly upperPivot: THREE.Group;
   readonly interactives: readonly THREE.Object3D[];
+  readonly outerLogoAnchor: THREE.Group;
+  readonly badgeLogoAnchor: THREE.Group;
   readonly update: (delta: number) => void;
   readonly press: (object: THREE.Object3D) => DeviceAction | undefined;
   readonly setClosed: (closed: boolean) => void;
   readonly isClosed: () => boolean;
+  readonly isHingeSettled: () => boolean;
   readonly screensVisible: () => boolean;
 };
 
-function uvLabel(text: string, width: number, height: number, color = "#ffffff", weight = 300): THREE.Mesh {
-  const label = createUvLabel({ text, width, height, color, weight });
-  label.rotation.x = -Math.PI / 2;
-  return label;
+type PressMotion = {
+  readonly object: THREE.Object3D;
+  readonly rest: THREE.Vector3;
+  readonly normal: THREE.Vector3;
+  readonly travel: number;
+  depression: number;
+  holdRemaining: number;
+};
+
+type PressRecord = {
+  readonly action: DeviceAction | undefined;
+  readonly motion: PressMotion;
+};
+
+type BuildState = {
+  readonly interactives: THREE.Object3D[];
+  readonly records: Map<THREE.Object3D, PressRecord>;
+  readonly motions: Map<THREE.Object3D, PressMotion>;
+  readonly ledMaterials: THREE.MeshStandardMaterial[];
+};
+
+type LowerAssembly = {
+  readonly group: THREE.Group;
+  readonly toggleMotion: PressMotion;
+};
+
+type UpperAssembly = {
+  readonly pivot: THREE.Group;
+  readonly outerLogoAnchor: THREE.Group;
+  readonly badgeLogoAnchor: THREE.Group;
+};
+
+const hitMaterial = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false });
+hitMaterial.colorWrite = false;
+
+export function panelRotationForOpening(openingDegrees: number): number {
+  return THREE.MathUtils.degToRad(90 - openingDegrees);
 }
 
-function frontLabel(text: string, width: number, height: number, color = "#ffffff", weight = 300): THREE.Mesh {
-  return createUvLabel({ text, width, height, color, weight });
+export function openingForPanelRotation(rotationRadians: number): number {
+  return 90 - THREE.MathUtils.radToDeg(rotationRadians);
 }
 
-function actionMesh(mesh: THREE.Mesh, action: DeviceAction, interactives: THREE.Object3D[]): void {
-  mesh.userData.action = action;
-  mesh.userData.restY = mesh.position.y;
-  mesh.userData.pressOffset = 0;
-  interactives.push(mesh);
-}
-
-function isDeviceAction(value: unknown): value is DeviceAction {
-  return value === "previous" || value === "next" || value === "artworks" || value === "fonts" || value === "tools" || value === "toggle" || value === "theme";
-}
-
-function flatRounded(width: number, depth: number, thickness: number, radius: number, material: THREE.Material): THREE.Mesh {
-  const mesh = extrudedShape(roundedRectShape(width, depth, radius), thickness, material, 0.015);
-  mesh.rotation.x = Math.PI / 2;
-  return mesh;
-}
-
-function addDpadDots(key: THREE.Mesh, rotation: number): void {
-  const dots = new THREE.Group();
-  dots.rotation.y = rotation;
-  const points = [[-0.48, 0.3], [-0.24, 0.06], [0, -0.18], [0.24, 0.06], [0.48, 0.3]] as const;
-  points.forEach(([x, z]) => {
-    const dot = cylinder(0.084, 0.018, materials.shellDeep, 14);
-    dot.position.set(x, 0.055, z);
-    dots.add(dot);
+function sourceLabel(spec: {
+  readonly text: string;
+  readonly widthPx: number;
+  readonly heightPx: number;
+  readonly fontSizePx: number;
+  readonly weight: number;
+  readonly color: string;
+  readonly align: "left" | "center" | "right";
+}): THREE.Mesh {
+  return createUvLabel({
+    text: spec.text,
+    sourceWidthPx: spec.widthPx,
+    sourceHeightPx: spec.heightPx,
+    fontSizePx: spec.fontSizePx,
+    weight: spec.weight,
+    color: spec.color,
+    align: spec.align,
   });
-  key.add(dots);
 }
 
-function createLower(interactives: THREE.Object3D[]): THREE.Group {
-  const lower = new THREE.Group();
-  const shell = extrudedShape(panelShape(DEVICE.width, DEVICE.lowerDepth, 1.5, true), DEVICE.lowerThickness, materials.shell, 0.08);
-  shell.rotation.x = Math.PI / 2;
-  lower.add(shell);
-  const bezel = flatRounded(DEVICE.bezelWidth, DEVICE.bezelHeight, 0.07, 0.25, materials.ink);
-  bezel.position.set(0, 1.005, 0.2);
+function registerPress(state: BuildState, spec: {
+  readonly target: THREE.Object3D;
+  readonly moving: THREE.Object3D;
+  readonly action: DeviceAction | undefined;
+}): PressMotion {
+  let motion = state.motions.get(spec.moving);
+  if (!motion) {
+    motion = {
+      object: spec.moving,
+      rest: spec.moving.position.clone(),
+      normal: new THREE.Vector3(0, 1, 0),
+      travel: DEVICE.buttonTravel,
+      depression: 0,
+      holdRemaining: 0,
+    };
+    state.motions.set(spec.moving, motion);
+  }
+  state.interactives.push(spec.target);
+  state.records.set(spec.target, { action: spec.action, motion });
+  return motion;
+}
+
+function dpadAction(direction: DpadDirection): DeviceAction | undefined {
+  const step = catalogueStepForDpad(direction);
+  if (step === -1) return "previous";
+  if (step === 1) return "next";
+  return undefined;
+}
+
+function addLowerDisplay(lower: THREE.Group): void {
+  const bezel = frameMesh({
+    outer: { width: DEVICE.bezelWidth, height: DEVICE.bezelHeight, radius: DEVICE.bezelRadius },
+    inner: { width: DEVICE.screenWidth, height: DEVICE.screenHeight, radius: 0 },
+    thickness: px(2),
+    material: materials.ink,
+    bevel: px(0.35),
+  });
+  bezel.rotation.x = Math.PI / 2;
+  bezel.position.set(0, DEVICE.lowerSurfaceY + px(1.2), DEVICE.lowerScreenCenterZ);
   lower.add(bezel);
+  const screen = new THREE.Mesh(new THREE.BoxGeometry(DEVICE.screenWidth, px(0.5), DEVICE.screenHeight), materials.screen);
+  screen.position.set(0, DEVICE.lowerSurfaceY + px(1.5), DEVICE.lowerScreenCenterZ);
+  lower.add(screen);
+  const glass = new THREE.Mesh(new THREE.BoxGeometry(DEVICE.screenWidth, px(0.25), DEVICE.screenHeight), materials.glass);
+  glass.position.set(0, DEVICE.lowerSurfaceY + px(2.05), DEVICE.lowerScreenCenterZ);
+  lower.add(glass);
+}
 
-  const dpad = new THREE.Group();
-  dpad.position.set(DEVICE.dpadX, 1.005, 0.25);
-  lower.add(dpad);
-  const dpadWell = extrudedShape(crossShape(5.6, 2.1, 0.38), 0.06, materials.ink, 0.02);
-  dpadWell.rotation.x = Math.PI / 2;
-  dpad.add(dpadWell);
-  const dpadCap = extrudedShape(crossShape(5.5, 2, 0.36), 0.08, materials.control, 0.025);
-  dpadCap.rotation.x = Math.PI / 2;
-  dpadCap.position.y = 0.06;
-  dpad.add(dpadCap);
-  const directions: readonly [DeviceAction, number, number, number, number, number][] = [
-    ["previous", 0, -1.8, 1.9, 1.5, 0],
-    ["next", 0, 1.8, 1.9, 1.5, Math.PI],
-    ["previous", -1.8, 0, 1.5, 1.9, -Math.PI / 2],
-    ["next", 1.8, 0, 1.5, 1.9, Math.PI / 2],
-  ];
-  directions.forEach(([action, x, z, width, depth, rotation]) => {
-    const key = roundedMesh([width, 0.025, depth], 0.28, new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }), 4);
-    key.position.set(x, 0.12, z);
-    dpad.add(key);
-    addDpadDots(key, rotation);
-    actionMesh(key, action, interactives);
+function addDpad(lower: THREE.Group, state: BuildState): void {
+  const dpad = PHYSICAL.dpad;
+  const well = extrudedMesh(crossShape({ total: dpad.outerSize, arm: dpad.outerArm, radius: dpad.outerCornerRadius }), {
+    thickness: px(1.1), material: materials.ink, bevel: px(0.25),
   });
+  well.rotation.x = Math.PI / 2;
+  well.position.set(dpad.x, DEVICE.lowerSurfaceY + px(0.55), dpad.z);
+  lower.add(well);
 
-  const buttonSpecs: readonly [string, DeviceAction, number][] = [
-    ["Artworks", "artworks", -2],
-    ["Fonts", "fonts", 0.3],
-    ["Tools", "tools", 2.6],
+  const moving = new THREE.Group();
+  moving.position.set(dpad.x, DEVICE.lowerSurfaceY, dpad.z);
+  lower.add(moving);
+  const cap = extrudedMesh(crossShape({ total: dpad.innerSize, arm: dpad.innerArm, radius: dpad.innerCornerRadius }), {
+    thickness: px(1.8), material: materials.control.clone(), bevel: px(0.35),
+  });
+  cap.rotation.x = Math.PI / 2;
+  cap.position.y = px(1.45);
+  moving.add(cap);
+
+  const directionSpecs: readonly { readonly direction: DpadDirection; readonly x: number; readonly z: number; readonly width: number; readonly depth: number }[] = [
+    { direction: "up", x: 0, z: -px(38), width: dpad.innerArm, depth: px(36) },
+    { direction: "right", x: px(38), z: 0, width: px(36), depth: dpad.innerArm },
+    { direction: "down", x: 0, z: px(38), width: dpad.innerArm, depth: px(36) },
+    { direction: "left", x: -px(38), z: 0, width: px(36), depth: dpad.innerArm },
   ];
-  buttonSpecs.forEach(([labelText, action, z]) => {
-    const well = flatRounded(5.6, 2.1, 0.055, 1.02, materials.ink);
-    well.position.set(DEVICE.controlX, 1.005, z);
+  directionSpecs.forEach((spec) => {
+    dpad.dots[spec.direction].forEach(([x, z]) => {
+      const dot = cylinderMesh({ radius: dpad.dotRadius, depth: px(0.5), material: materials.shellDeep, segments: 16 });
+      dot.position.set(px(x), px(3.05), px(z));
+      moving.add(dot);
+    });
+    const target = roundedBox({ size: [spec.width, px(0.4), spec.depth], radius: px(2), material: hitMaterial, segments: 3 });
+    target.position.set(spec.x, px(3), spec.z);
+    moving.add(target);
+    registerPress(state, { target, moving, action: dpadAction(spec.direction) });
+  });
+}
+
+function addRightButtons(lower: THREE.Group, state: BuildState): void {
+  PHYSICAL.buttons.forEach((spec) => {
+    const z = px(spec.top - 60 + 21 - 240);
+    const well = flatRoundedMesh({
+      width: PHYSICAL.button.outerWidth, depth: PHYSICAL.button.outerHeight, thickness: px(1.1),
+      radius: PHYSICAL.button.outerRadius, material: materials.ink, bevel: px(0.25),
+    });
+    well.position.set(PHYSICAL.button.x, DEVICE.lowerSurfaceY + px(0.55), z);
     lower.add(well);
-    const button = flatRounded(5.5, 2, 0.08, 0.97, materials.control);
-    button.position.set(DEVICE.controlX, 1.065, z);
-    lower.add(button);
-    actionMesh(button, action, interactives);
-    const label = uvLabel(labelText, 5, 0.65, "#f02bd1");
-    label.position.set(DEVICE.controlX, 1.125, z);
-    lower.add(label);
-    button.userData.label = label;
+    const cap = flatRoundedMesh({
+      width: PHYSICAL.button.capWidth, depth: PHYSICAL.button.capHeight, thickness: px(1.8),
+      radius: PHYSICAL.button.capRadius, material: materials.control.clone(), bevel: px(0.35),
+    });
+    cap.position.set(PHYSICAL.button.x, DEVICE.lowerSurfaceY + px(1.45), z);
+    const label = sourceLabel({
+      text: spec.text, widthPx: spec.labelWidthPx, heightPx: PHYSICAL.button.labelHeightPx,
+      fontSizePx: PHYSICAL.button.labelFontSizePx, weight: 300, color: "#f02bd1", align: "center",
+    });
+    label.rotation.x = Math.PI;
+    label.scale.x = -1;
+    if (label.material instanceof THREE.MeshBasicMaterial && label.material.map) {
+      label.material.map.wrapS = THREE.RepeatWrapping;
+      label.material.map.repeat.x = -1;
+      label.material.map.offset.x = 1;
+    }
+    label.position.z = -px(1.15);
+    cap.add(label);
+    lower.add(cap);
+    registerPress(state, { target: cap, moving: cap, action: spec.action });
   });
+}
 
-  const toggleWell = flatRounded(0.8, 2, 0.055, 0.4, materials.control);
-  toggleWell.position.set(14, 1.005, 7);
-  lower.add(toggleWell);
-  const toggle = flatRounded(0.7, 1.1, 0.08, 0.35, materials.shell);
-  toggle.position.set(14, 1.065, 6.6);
-  toggle.userData.toggleOn = true;
-  toggle.userData.onZ = 6.6;
-  toggle.userData.offZ = 7.4;
-  lower.add(toggle);
-  actionMesh(toggle, "toggle", interactives);
-  const motionLabel = uvLabel("Motion", 2.15, 0.45, "#ffffff", 400);
-  motionLabel.position.set(16.12, 1.03, 6.68);
+function addToggleAndTheme(lower: THREE.Group, state: BuildState): PressMotion {
+  const toggle = PHYSICAL.toggle;
+  const well = flatRoundedMesh({
+    width: toggle.outerWidth, depth: toggle.outerHeight, thickness: px(1.1), radius: toggle.outerRadius,
+    material: materials.control.clone(), bevel: px(0.25),
+  });
+  well.position.set(toggle.x, DEVICE.lowerSurfaceY + px(0.55), toggle.z);
+  lower.add(well);
+  const handle = flatRoundedMesh({
+    width: toggle.handleWidth, depth: toggle.handleHeight, thickness: px(1.8), radius: toggle.handleRadius,
+    material: materials.shell.clone(), bevel: px(0.3),
+  });
+  handle.position.set(toggle.x, DEVICE.lowerSurfaceY + px(1.45), toggle.onZ);
+  lower.add(handle);
+  const toggleMotion = registerPress(state, { target: handle, moving: handle, action: "toggle" });
+  const motionLabel = sourceLabel({
+    text: "Motion", widthPx: toggle.labelWidthPx, heightPx: toggle.labelHeightPx,
+    fontSizePx: toggle.labelFontSizePx, weight: 400, color: "#ffffff", align: "left",
+  });
+  motionLabel.rotation.x = -Math.PI / 2;
+  motionLabel.position.set(toggle.labelX, DEVICE.lowerSurfaceY + px(1.5), toggle.labelZ);
   lower.add(motionLabel);
-  const motionState = uvLabel("On / Off", 2.15, 0.42);
-  motionState.position.set(16.12, 1.03, 7.16);
-  lower.add(motionState);
 
-  const selectWell = cylinder(0.4, 0.055, materials.ink, 28);
-  selectWell.position.set(14, 1.005, 9);
-  lower.add(selectWell);
-  const select = cylinder(0.35, 0.08, materials.shell, 28);
-  select.position.set(14, 1.065, 9);
-  lower.add(select);
-  actionMesh(select, "theme", interactives);
-  const selectLabel = uvLabel("Light / Dark", 3.15, 0.45);
-  selectLabel.position.set(16.62, 1.03, 9);
-  lower.add(selectLabel);
+  const theme = PHYSICAL.theme;
+  const themeWell = cylinderMesh({ radius: theme.outerRadius, depth: px(1.1), material: materials.ink, segments: 32 });
+  themeWell.position.set(theme.x, DEVICE.lowerSurfaceY + px(0.55), theme.z);
+  lower.add(themeWell);
+  const themeCap = cylinderMesh({ radius: theme.capRadius, depth: px(1.8), material: materials.shell.clone(), segments: 32 });
+  themeCap.position.set(theme.x, DEVICE.lowerSurfaceY + px(1.45), theme.z);
+  lower.add(themeCap);
+  registerPress(state, { target: themeCap, moving: themeCap, action: "theme" });
+  const themeLabel = sourceLabel({
+    text: "Light / Dark", widthPx: theme.labelWidthPx, heightPx: theme.labelHeightPx,
+    fontSizePx: theme.labelFontSizePx, weight: 300, color: "#ffffff", align: "left",
+  });
+  themeLabel.rotation.x = -Math.PI / 2;
+  themeLabel.position.set(theme.labelX, DEVICE.lowerSurfaceY + px(1.5), theme.labelZ);
+  lower.add(themeLabel);
+  return toggleMotion;
+}
 
-  const ledPositions = [[19.53, 1.03, -9.63], [19.53, 1.03, -7.18]] as const;
-  ledPositions.forEach(([x, y, z]) => {
-    const led = cylinder(0.075, 0.025, materials.led.clone(), 18);
-    led.position.set(x, y, z);
-    led.userData.statusLed = true;
+function addIndicatorsAndPorts(lower: THREE.Group, state: BuildState): void {
+  PHYSICAL.indicators.forEach((spec) => {
+    const label = sourceLabel({
+      text: spec.text, widthPx: spec.labelWidthPx, heightPx: 9, fontSizePx: 11,
+      weight: 300, color: "#ffffff", align: "right",
+    });
+    label.rotation.x = -Math.PI / 2;
+    label.position.set(spec.labelX, DEVICE.lowerSurfaceY + px(1.25), spec.labelZ);
+    lower.add(label);
+    const ledMaterial = materials.led.clone();
+    state.ledMaterials.push(ledMaterial);
+    const led = cylinderMesh({ radius: px(1.5), depth: px(0.7), material: ledMaterial, segments: 18 });
+    led.position.set(px(390.5), DEVICE.lowerSurfaceY + px(1.15), spec.ledZ);
     lower.add(led);
   });
-  const audioLabel = uvLabel("Audio", 1.4, 0.45);
-  audioLabel.position.set(18.45, 1.03, -9.63);
-  lower.add(audioLabel);
-  const powerLabel = uvLabel("Power", 1.6, 0.45);
-  powerLabel.position.set(18.32, 1.03, -7.18);
-  lower.add(powerLabel);
-
-  const jack = cylinder(0.33, 0.32, materials.ink, 24);
-  jack.rotation.z = Math.PI / 2;
-  jack.position.set(20.02, 0.1, -9.63);
-  lower.add(jack);
-  const usb = roundedMesh([0.28, 0.5, 1.55], 0.22, materials.ink, 5);
-  usb.position.set(20.02, 0.08, -7.18);
-  lower.add(usb);
-  return lower;
+  const audioZ = PHYSICAL.indicators[0].ledZ;
+  const powerZ = PHYSICAL.indicators[1].ledZ;
+  const jackRim = cylinderMesh({ radius: px(6.5), depth: px(5), material: materials.ink, segments: 28 });
+  jackRim.rotation.z = Math.PI / 2;
+  jackRim.position.set(px(399), -px(12), audioZ);
+  lower.add(jackRim);
+  const jackVoid = cylinderMesh({ radius: px(4.2), depth: px(5.5), material: materials.portVoid, segments: 24 });
+  jackVoid.rotation.z = Math.PI / 2;
+  jackVoid.position.set(px(400), -px(12), audioZ);
+  lower.add(jackVoid);
+  const usbRim = roundedBox({ size: [px(5), px(11), px(31)], radius: px(2), material: materials.ink, segments: 4 });
+  usbRim.position.set(px(399), -px(12), powerZ);
+  lower.add(usbRim);
+  const usbVoid = roundedBox({ size: [px(5.5), px(7), px(24)], radius: px(1.5), material: materials.portVoid, segments: 4 });
+  usbVoid.position.set(px(400), -px(12), powerZ);
+  lower.add(usbVoid);
 }
 
-function createUpper(): THREE.Group {
-  const pivot = new THREE.Group();
-  pivot.position.set(0, 0.65, -12);
-  const speakerHoles = [-17, -15.4, 15.4, 17].flatMap((x) => [8.83, 10.43, 12.03, 13.63].map((y) => ({ x, y: y - 12, radius: 0.2 })));
-  const shell = extrudedShape(panelShape(DEVICE.width, DEVICE.panelHeight, 2.56, true), DEVICE.upperThickness, materials.shell, 0.08);
-  shell.position.y = 12;
-  pivot.add(shell);
-  const bezel = extrudedShape(roundedRectShape(DEVICE.bezelWidth, DEVICE.bezelHeight, 0.25), 0.055, materials.ink, 0.015);
-  bezel.position.set(0, DEVICE.screenCenterY, 0.8);
-  pivot.add(bezel);
-  speakerHoles.forEach((holeSpec) => {
-    const backing = cylinder(0.2, 0.05, materials.ink, 24);
-    backing.rotation.x = Math.PI / 2;
-    backing.position.set(holeSpec.x, holeSpec.y + 12, 0.76);
-    pivot.add(backing);
+function createLower(state: BuildState): LowerAssembly {
+  const lower = new THREE.Group();
+  const shell = extrudedMesh(panelShape({
+    width: DEVICE.width, height: DEVICE.lowerDepth,
+    minYRadius: DEVICE.matingRadius, maxYRadius: DEVICE.lowerOuterRadius,
+  }), { thickness: DEVICE.lowerThickness, material: materials.shell, bevel: px(1.2) });
+  shell.rotation.x = Math.PI / 2;
+  shell.position.y = DEVICE.lowerSurfaceY - DEVICE.lowerThickness / 2;
+  lower.add(shell);
+  addLowerDisplay(lower);
+  addDpad(lower, state);
+  addRightButtons(lower, state);
+  const toggleMotion = addToggleAndTheme(lower, state);
+  addIndicatorsAndPorts(lower, state);
+  return { group: lower, toggleMotion };
+}
+
+function addUpperDisplay(pivot: THREE.Group): void {
+  const bezel = frameMesh({
+    outer: { width: DEVICE.bezelWidth, height: DEVICE.bezelHeight, radius: DEVICE.bezelRadius },
+    inner: { width: DEVICE.screenWidth, height: DEVICE.screenHeight, radius: 0 },
+    thickness: px(2), material: materials.ink, bevel: px(0.35),
   });
-  const cameraFrame = cylinder(0.5, 0.05, materials.ink, 32);
-  cameraFrame.rotation.x = Math.PI / 2;
-  cameraFrame.position.set(0, 23.1, 0.79);
-  pivot.add(cameraFrame);
-  const lens = cylinder(0.22, 0.28, materials.lens, 32);
+  bezel.position.set(0, DEVICE.screenCenterY + DEVICE.hingeRadius, px(11.8));
+  pivot.add(bezel);
+  const screen = new THREE.Mesh(new THREE.BoxGeometry(DEVICE.screenWidth, DEVICE.screenHeight, px(1)), materials.screen);
+  screen.position.set(0, DEVICE.screenCenterY + DEVICE.hingeRadius, px(11.4));
+  pivot.add(screen);
+  const glass = new THREE.Mesh(new THREE.BoxGeometry(DEVICE.screenWidth, DEVICE.screenHeight, px(0.25)), materials.glass);
+  glass.position.set(0, DEVICE.screenCenterY + DEVICE.hingeRadius, px(12.85));
+  pivot.add(glass);
+}
+
+function addCameraAndBadge(pivot: THREE.Group): { readonly outer: THREE.Group; readonly badge: THREE.Group } {
+  const camera = PHYSICAL.camera;
+  const frame = cylinderMesh({ radius: camera.frameRadius, depth: px(2), material: materials.ink, segments: 40 });
+  frame.rotation.x = Math.PI / 2;
+  frame.position.set(camera.x, camera.y + DEVICE.hingeRadius, px(14.1));
+  pivot.add(frame);
+  const lens = cylinderMesh({ radius: camera.lensRadius, depth: px(1.2), material: materials.lensCore, segments: 36 });
   lens.rotation.x = Math.PI / 2;
-  lens.position.set(0, 23.1, 0.82);
+  lens.position.set(camera.x, camera.y + DEVICE.hingeRadius, px(15.3));
   pivot.add(lens);
-  const cameraLed = roundedMesh([0.4, 0.1, 0.1], 0.04, materials.led, 3);
-  cameraLed.position.set(1.1, 23.1, 0.82);
+  const lensGlass = cylinderMesh({ radius: camera.lensRadius, depth: px(0.35), material: materials.lensGlass, segments: 36 });
+  lensGlass.rotation.x = Math.PI / 2;
+  lensGlass.position.set(camera.x, camera.y + DEVICE.hingeRadius, px(16.05));
+  pivot.add(lensGlass);
+  const cameraLed = roundedBox({ size: [camera.ledWidth, camera.ledHeight, px(0.7)], radius: px(1), material: materials.led, segments: 3 });
+  cameraLed.position.set(camera.ledX, camera.ledY + DEVICE.hingeRadius, px(14.6));
   pivot.add(cameraLed);
-  const badge = extrudedShape(roundedRectShape(3.5, 2, 0.4), 0.08, materials.chrome, 0.02);
-  badge.position.set(0, 1.35, 0.81);
-  pivot.add(badge);
-  const badgeGlyph = frontLabel("OSG", 2.3, 1.6, "#ffffff", 700);
-  badgeGlyph.position.set(0, 1.35, 0.87);
-  pivot.add(badgeGlyph);
-  const engraved = frontLabel("OSG", 4.8, 2, "#b94fa8", 700);
-  engraved.position.set(0, 12, -0.761);
-  engraved.rotation.z = Math.PI / 2;
-  pivot.add(engraved);
-  return pivot;
+
+  const badge = PHYSICAL.badge;
+  const badgeRim = extrudedMesh(roundedRectShape({ width: badge.width, height: badge.height, radius: badge.radius }), {
+    thickness: px(2.4), material: materials.chromeRim, bevel: px(0.5),
+  });
+  badgeRim.position.set(badge.x, badge.y + DEVICE.hingeRadius, px(14.2));
+  pivot.add(badgeRim);
+  const badgePlate = extrudedMesh(roundedRectShape({
+    width: badge.width - badge.border * 2, height: badge.height - badge.border * 2, radius: badge.radius - badge.border,
+  }), { thickness: px(1.4), material: materials.chrome, bevel: px(0.35) });
+  badgePlate.position.set(badge.x, badge.y + DEVICE.hingeRadius, px(15.7));
+  pivot.add(badgePlate);
+  const badgeAnchor = new THREE.Group();
+  badgeAnchor.name = "badgeLogoAnchor";
+  badgeAnchor.position.set(badge.x, badge.y + DEVICE.hingeRadius, px(16.8));
+  pivot.add(badgeAnchor);
+
+  const outerAnchor = new THREE.Group();
+  outerAnchor.name = "outerLogoAnchor";
+  outerAnchor.position.set(PHYSICAL.outerLogo.x, PHYSICAL.outerLogo.y + DEVICE.hingeRadius, -DEVICE.upperThickness / 2 - px(0.2));
+  outerAnchor.rotation.y = Math.PI;
+  pivot.add(outerAnchor);
+  return { outer: outerAnchor, badge: badgeAnchor };
+}
+
+function createUpper(): UpperAssembly {
+  const pivot = new THREE.Group();
+  pivot.position.set(0, DEVICE.hingeAxisY, DEVICE.hingeZ);
+  const holes: THREE.Path[] = [roundedRectHole({
+    width: DEVICE.bezelWidth, height: DEVICE.bezelHeight, radius: DEVICE.bezelRadius,
+    y: DEVICE.screenCenterY - DEVICE.panelHeight / 2,
+  })];
+  PHYSICAL.speakerX.forEach((x) => PHYSICAL.speakerY.forEach((y) => {
+    holes.push(circleHole({ x, y: y - DEVICE.panelHeight / 2, radius: PHYSICAL.speakerRadius }));
+  }));
+  const profile = {
+    width: DEVICE.width, height: DEVICE.panelHeight,
+    minYRadius: DEVICE.matingRadius, maxYRadius: DEVICE.upperOuterRadius,
+  } as const;
+  const body = extrudedMesh(panelShape({ ...profile, holes }), {
+    thickness: DEVICE.upperThickness, material: materials.shell, bevel: px(1.2),
+  });
+  body.position.y = DEVICE.panelHeight / 2 + DEVICE.hingeRadius;
+  pivot.add(body);
+  const backSkin = extrudedMesh(panelShape(profile), { thickness: px(2.4), material: materials.shell, bevel: px(0.8) });
+  backSkin.position.set(0, DEVICE.panelHeight / 2 + DEVICE.hingeRadius, -(DEVICE.upperThickness - px(2.4)) / 2);
+  pivot.add(backSkin);
+  addUpperDisplay(pivot);
+  PHYSICAL.speakerX.forEach((x) => PHYSICAL.speakerY.forEach((y) => {
+    const aperture = cylinderMesh({ radius: PHYSICAL.speakerRadius, depth: px(1.6), material: materials.portVoid, segments: 24 });
+    aperture.rotation.x = Math.PI / 2;
+    aperture.position.set(x, y + DEVICE.hingeRadius, px(10.6));
+    pivot.add(aperture);
+  }));
+  const anchors = addCameraAndBadge(pivot);
+
+  const centerBarrel = cylinderMesh({ radius: DEVICE.hingeRadius, depth: PHYSICAL.hinge.center.width, material: materials.shell, segments: 64 });
+  centerBarrel.rotation.z = Math.PI / 2;
+  pivot.add(centerBarrel);
+  const hingeWeb = roundedBox({
+    size: [PHYSICAL.hinge.center.width, DEVICE.hingeRadius, DEVICE.upperThickness],
+    radius: DEVICE.matingRadius, material: materials.shell, segments: 4,
+  });
+  hingeWeb.position.y = DEVICE.hingeRadius / 2;
+  pivot.add(hingeWeb);
+  return { pivot, outerLogoAnchor: anchors.outer, badgeLogoAnchor: anchors.badge };
+}
+
+function addSideHinges(root: THREE.Group): void {
+  [PHYSICAL.hinge.left, PHYSICAL.hinge.right].forEach((spec) => {
+    const barrel = cylinderMesh({ radius: DEVICE.hingeRadius, depth: spec.width, material: materials.shell, segments: 64 });
+    barrel.rotation.z = Math.PI / 2;
+    barrel.position.set(spec.x, DEVICE.hingeAxisY, DEVICE.hingeZ);
+    root.add(barrel);
+  });
 }
 
 export function createDeviceModel(): DeviceModel {
-  const interactives: THREE.Object3D[] = [];
+  const state: BuildState = { interactives: [], records: new Map(), motions: new Map(), ledMaterials: [] };
   const root = new THREE.Group();
-  root.rotation.x = 0;
-  root.add(createLower(interactives));
-  const upperPivot = createUpper();
-  root.add(upperPivot);
-  const hingeMaterial = materials.shell;
-  for (const x of [-17.6, 0, 17.6]) {
-    const hinge = cylinder(DEVICE.hingeRadius, x === 0 ? 30.5 : 4.8, hingeMaterial, 48);
-    hinge.rotation.z = Math.PI / 2;
-    hinge.position.set(x, 1.1, -12);
-    root.add(hinge);
-  }
+  const lower = createLower(state);
+  root.add(lower.group);
+  const upper = createUpper();
+  root.add(upper.pivot);
+  addSideHinges(root);
+
   let closed = false;
-  let targetRotation = THREE.MathUtils.degToRad(90 - DEVICE.openAngle);
+  let toggleOn = true;
+  let targetRotation = panelRotationForOpening(DEVICE.openAngle);
+  const isHingeSettled = (): boolean => Math.abs(upper.pivot.rotation.x - targetRotation) <= THREE.MathUtils.degToRad(DEVICE.hingeSettleEpsilon);
   const update = (delta: number): void => {
     const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    upperPivot.rotation.x = reducedMotion ? targetRotation : THREE.MathUtils.damp(upperPivot.rotation.x, targetRotation, 7, delta);
-    interactives.forEach((object) => {
-      const restY = Number(object.userData.restY ?? object.position.y);
-      const offset = Number(object.userData.pressOffset ?? 0);
-      object.position.y = reducedMotion ? restY - offset : THREE.MathUtils.damp(object.position.y, restY - offset, 22, delta);
-      const hoverScale = object.userData.hovered ? 1.035 : 1;
-      object.scale.setScalar(reducedMotion ? hoverScale : THREE.MathUtils.damp(object.scale.x, hoverScale, 18, delta));
-      const label = object.userData.label;
-      if (label instanceof THREE.Object3D) label.position.y = object.position.y + 0.06;
+    upper.pivot.rotation.x = reducedMotion ? targetRotation : THREE.MathUtils.damp(upper.pivot.rotation.x, targetRotation, 7, delta);
+    state.motions.forEach((motion) => {
+      motion.holdRemaining = Math.max(0, motion.holdRemaining - delta);
+      const targetDepression = motion.holdRemaining > 0 ? motion.travel : 0;
+      motion.depression = reducedMotion ? targetDepression : THREE.MathUtils.damp(motion.depression, targetDepression, 24, delta);
+      const x = motion.rest.x - motion.normal.x * motion.depression;
+      const y = motion.rest.y - motion.normal.y * motion.depression;
+      const z = motion.rest.z - motion.normal.z * motion.depression;
+      motion.object.position.x = reducedMotion ? x : THREE.MathUtils.damp(motion.object.position.x, x, 24, delta);
+      motion.object.position.y = reducedMotion ? y : THREE.MathUtils.damp(motion.object.position.y, y, 24, delta);
+      motion.object.position.z = reducedMotion ? z : THREE.MathUtils.damp(motion.object.position.z, z, 18, delta);
     });
   };
   const press = (object: THREE.Object3D): DeviceAction | undefined => {
-    const action: unknown = object.userData.action;
-    if (!isDeviceAction(action)) return undefined;
-    object.userData.pressOffset = DEVICE.buttonTravel;
-    window.setTimeout(() => { object.userData.pressOffset = 0; }, 120);
-    if (action === "toggle") {
-      object.userData.toggleOn = !Boolean(object.userData.toggleOn);
-      object.position.z = Number(object.userData.toggleOn ? object.userData.onZ : object.userData.offZ);
-      root.traverse((child) => {
-        if (!child.userData.statusLed || !(child instanceof THREE.Mesh) || !(child.material instanceof THREE.MeshStandardMaterial)) return;
-        child.material.emissiveIntensity = object.userData.toggleOn ? 2.8 : 0.08;
-      });
+    const record = state.records.get(object);
+    if (!record) return undefined;
+    record.motion.holdRemaining = 0.1;
+    if (record.action === "toggle") {
+      toggleOn = !toggleOn;
+      lower.toggleMotion.rest.z = toggleOn ? PHYSICAL.toggle.onZ : PHYSICAL.toggle.offZ;
+      state.ledMaterials.forEach((material) => { material.emissiveIntensity = toggleOn ? 2.6 : 0.06; });
     }
-    return action;
+    return record.action;
   };
   const setClosed = (next: boolean): void => {
     closed = next;
-    targetRotation = THREE.MathUtils.degToRad(90 - (next ? DEVICE.closedAngle : DEVICE.openAngle));
+    targetRotation = panelRotationForOpening(next ? DEVICE.closedAngle : DEVICE.openAngle);
   };
-  upperPivot.rotation.x = targetRotation;
-  return { root, upperPivot, interactives, update, press, setClosed, isClosed: () => closed, screensVisible: () => upperPivot.rotation.x < 0.45 };
+  upper.pivot.rotation.x = targetRotation;
+  return {
+    root,
+    upperPivot: upper.pivot,
+    interactives: state.interactives,
+    outerLogoAnchor: upper.outerLogoAnchor,
+    badgeLogoAnchor: upper.badgeLogoAnchor,
+    update,
+    press,
+    setClosed,
+    isClosed: () => closed,
+    isHingeSettled,
+    screensVisible: () => !closed && isHingeSettled() && openingForPanelRotation(upper.pivot.rotation.x) >= DEVICE.screenVisibilityAngle,
+  };
 }

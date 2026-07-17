@@ -13,160 +13,215 @@ export const COLORS = {
   lensB: 0x0a0090,
 } as const;
 
-export const materials = {
-  shell: new THREE.MeshPhysicalMaterial({ color: 0x22001c, emissive: 0xff78e8, emissiveIntensity: 1.18, roughness: 0.2, metalness: 0, clearcoat: 0.85, clearcoatRoughness: 0.22 }),
-  shellDeep: new THREE.MeshPhysicalMaterial({ color: 0x240020, emissive: COLORS.shellDeep, emissiveIntensity: 1, roughness: 0.28, clearcoat: 0.55 }),
-  control: new THREE.MeshPhysicalMaterial({ color: 0x201c20, emissive: COLORS.control, emissiveIntensity: 1, roughness: 0.25, clearcoat: 0.62 }),
-  ink: new THREE.MeshStandardMaterial({ color: COLORS.ink, roughness: 0.58 }),
-  glass: new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.78, transmission: 0.04, transparent: true, opacity: 0.88 }),
-  chrome: new THREE.MeshStandardMaterial({ color: COLORS.chrome, emissive: 0x8f8f8f, emissiveIntensity: 0.72, metalness: 0.72, roughness: 0.18 }),
-  lens: new THREE.MeshPhysicalMaterial({ color: COLORS.lensA, emissive: COLORS.lensB, emissiveIntensity: 0.12, metalness: 0.18, roughness: 0.12, transmission: 0.35, thickness: 0.2 }),
-  led: new THREE.MeshStandardMaterial({ color: COLORS.led, emissive: COLORS.led, emissiveIntensity: 2.8 }),
-};
-
-export function roundedMesh(
-  size: readonly [number, number, number],
-  radius: number,
-  material: THREE.Material,
-  segments = 5,
-): THREE.Mesh {
-  const geometry = new RoundedBoxGeometry(size[0], size[1], size[2], segments, radius);
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
-  return mesh;
+function createAbsMicrotexture(): THREE.DataTexture {
+  const size = 64;
+  const pixels = new Uint8Array(size * size);
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      const coarse = (x * 37 + y * 61 + ((x * y) % 23) * 17) % 53;
+      const fine = ((x + y * 3) % 7) * 3;
+      pixels[y * size + x] = 176 + coarse + fine;
+    }
+  }
+  const texture = new THREE.DataTexture(pixels, size, size, THREE.RedFormat, THREE.UnsignedByteType);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(24, 18);
+  texture.magFilter = THREE.LinearFilter;
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  texture.generateMipmaps = true;
+  texture.needsUpdate = true;
+  return texture;
 }
 
-export function panelShape(
-  width: number,
-  height: number,
-  radius: number,
-  roundTop: boolean,
-  holes: readonly { readonly x: number; readonly y: number; readonly radius: number }[] = [],
-): THREE.Shape {
-  const half = width / 2;
-  const minY = -height / 2;
-  const maxY = height / 2;
-  const k = 0.72;
-  const shape = new THREE.Shape();
-  shape.moveTo(-half, minY);
-  shape.lineTo(half, minY);
-  shape.lineTo(half, maxY - radius);
-  shape.bezierCurveTo(half, maxY - radius + k * radius, half - radius + k * radius, maxY, half - radius, maxY);
-  shape.lineTo(-half + radius, maxY);
-  shape.bezierCurveTo(-half + radius - k * radius, maxY, -half, maxY - radius + k * radius, -half, maxY - radius);
-  if (!roundTop) {
-    shape.lineTo(-half, minY + radius);
-    shape.bezierCurveTo(-half, minY + radius - k * radius, -half + radius - k * radius, minY, -half + radius, minY);
-    shape.lineTo(half - radius, minY);
-    shape.bezierCurveTo(half - radius + k * radius, minY, half, minY + radius - k * radius, half, minY + radius);
-    shape.lineTo(half, maxY - radius);
-    shape.bezierCurveTo(half, maxY - radius + k * radius, half - radius + k * radius, maxY, half - radius, maxY);
-    shape.lineTo(-half + radius, maxY);
-    shape.bezierCurveTo(-half + radius - k * radius, maxY, -half, maxY - radius + k * radius, -half, maxY - radius);
+const absMicrotexture = createAbsMicrotexture();
+
+export const materials = {
+  shell: new THREE.MeshPhysicalMaterial({ color: COLORS.shell, emissive: COLORS.shell, emissiveIntensity: 0.34, roughness: 0.27, metalness: 0, clearcoat: 0.62, clearcoatRoughness: 0.16, specularIntensity: 0.36, bumpMap: absMicrotexture, bumpScale: 0.018, roughnessMap: absMicrotexture }),
+  shellDeep: new THREE.MeshPhysicalMaterial({ color: COLORS.shellDeep, roughness: 0.3, metalness: 0, clearcoat: 0.78, clearcoatRoughness: 0.18, bumpMap: absMicrotexture, bumpScale: 0.012 }),
+  control: new THREE.MeshPhysicalMaterial({ color: COLORS.control, roughness: 0.28, metalness: 0, clearcoat: 0.82, clearcoatRoughness: 0.16, bumpMap: absMicrotexture, bumpScale: 0.01 }),
+  ink: new THREE.MeshPhysicalMaterial({ color: COLORS.ink, roughness: 0.4, metalness: 0.02, clearcoat: 0.2 }),
+  screen: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, metalness: 0 }),
+  glass: new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.84, metalness: 0, clearcoat: 0.1, clearcoatRoughness: 0.76, transparent: true, opacity: 0.08, depthWrite: false }),
+  chrome: new THREE.MeshPhysicalMaterial({ color: 0x888888, roughness: 0.13, metalness: 1, clearcoat: 0.82, clearcoatRoughness: 0.06 }),
+  chromeRim: new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.08, metalness: 0.82, clearcoat: 0.95, clearcoatRoughness: 0.035 }),
+  lensCore: new THREE.MeshStandardMaterial({ color: COLORS.lensA, emissive: COLORS.lensB, emissiveIntensity: 0.72, roughness: 0.42, metalness: 0.05 }),
+  lensGlass: new THREE.MeshPhysicalMaterial({ color: 0x8e95ff, roughness: 0.025, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.015, transparent: true, opacity: 0.18, depthWrite: false }),
+  led: new THREE.MeshStandardMaterial({ color: COLORS.led, emissive: COLORS.led, emissiveIntensity: 2.6, roughness: 0.25 }),
+  portVoid: new THREE.MeshStandardMaterial({ color: 0x050305, roughness: 0.82, metalness: 0 }),
+} as const;
+
+type RoundedRectSpec = {
+  readonly width: number;
+  readonly height: number;
+  readonly radius: number;
+  readonly x?: number;
+  readonly y?: number;
+};
+
+function traceRoundedRect(path: THREE.Path, spec: RoundedRectSpec, clockwise: boolean): void {
+  const halfWidth = spec.width / 2;
+  const halfHeight = spec.height / 2;
+  const radius = Math.min(spec.radius, halfWidth, halfHeight);
+  const x = spec.x ?? 0;
+  const y = spec.y ?? 0;
+  if (clockwise) {
+    path.moveTo(x - halfWidth + radius, y - halfHeight);
+    path.quadraticCurveTo(x - halfWidth, y - halfHeight, x - halfWidth, y - halfHeight + radius);
+    path.lineTo(x - halfWidth, y + halfHeight - radius);
+    path.quadraticCurveTo(x - halfWidth, y + halfHeight, x - halfWidth + radius, y + halfHeight);
+    path.lineTo(x + halfWidth - radius, y + halfHeight);
+    path.quadraticCurveTo(x + halfWidth, y + halfHeight, x + halfWidth, y + halfHeight - radius);
+    path.lineTo(x + halfWidth, y - halfHeight + radius);
+    path.quadraticCurveTo(x + halfWidth, y - halfHeight, x + halfWidth - radius, y - halfHeight);
+  } else {
+    path.moveTo(x - halfWidth + radius, y - halfHeight);
+    path.lineTo(x + halfWidth - radius, y - halfHeight);
+    path.quadraticCurveTo(x + halfWidth, y - halfHeight, x + halfWidth, y - halfHeight + radius);
+    path.lineTo(x + halfWidth, y + halfHeight - radius);
+    path.quadraticCurveTo(x + halfWidth, y + halfHeight, x + halfWidth - radius, y + halfHeight);
+    path.lineTo(x - halfWidth + radius, y + halfHeight);
+    path.quadraticCurveTo(x - halfWidth, y + halfHeight, x - halfWidth, y + halfHeight - radius);
+    path.lineTo(x - halfWidth, y - halfHeight + radius);
+    path.quadraticCurveTo(x - halfWidth, y - halfHeight, x - halfWidth + radius, y - halfHeight);
   }
-  shape.closePath();
-  holes.forEach((hole) => {
-    const path = new THREE.Path();
-    path.absarc(hole.x, hole.y, hole.radius, 0, Math.PI * 2, true);
-    shape.holes.push(path);
-  });
+  path.closePath();
+}
+
+export function roundedRectShape(spec: RoundedRectSpec): THREE.Shape {
+  const shape = new THREE.Shape();
+  traceRoundedRect(shape, spec, false);
   return shape;
 }
 
-export function extrudedShape(
-  shape: THREE.Shape,
-  thickness: number,
-  material: THREE.Material,
-  bevel = 0.07,
-): THREE.Mesh {
-  const geometry = new THREE.ExtrudeGeometry(shape, {
-    depth: thickness,
-    bevelEnabled: true,
-    bevelSegments: 4,
-    steps: 1,
-    bevelSize: bevel,
-    bevelThickness: bevel,
-    curveSegments: 24,
-  });
-  geometry.translate(0, 0, -thickness / 2);
-  geometry.computeVertexNormals();
-  return new THREE.Mesh(geometry, material);
+export function roundedRectHole(spec: RoundedRectSpec): THREE.Path {
+  const path = new THREE.Path();
+  traceRoundedRect(path, spec, true);
+  return path;
 }
 
-export function crossShape(total: number, arm: number, radius: number): THREE.Shape {
-  const h = total / 2;
-  const a = arm / 2;
-  const r = Math.min(radius, (h - a) / 2);
-  const points: readonly [number, number][] = [
-    [-a, -h], [a, -h], [a, -a], [h, -a], [h, a], [a, a], [a, h], [-a, h], [-a, a], [-h, a], [-h, -a], [-a, -a],
+export function circleHole(spec: { readonly x: number; readonly y: number; readonly radius: number }): THREE.Path {
+  const path = new THREE.Path();
+  path.absarc(spec.x, spec.y, spec.radius, 0, Math.PI * 2, true);
+  return path;
+}
+
+export function panelShape(spec: {
+  readonly width: number;
+  readonly height: number;
+  readonly minYRadius: number;
+  readonly maxYRadius: number;
+  readonly holes?: readonly THREE.Path[];
+}): THREE.Shape {
+  const halfWidth = spec.width / 2;
+  const halfHeight = spec.height / 2;
+  const shape = new THREE.Shape();
+  shape.moveTo(-halfWidth + spec.minYRadius, -halfHeight);
+  shape.lineTo(halfWidth - spec.minYRadius, -halfHeight);
+  shape.quadraticCurveTo(halfWidth, -halfHeight, halfWidth, -halfHeight + spec.minYRadius);
+  shape.lineTo(halfWidth, halfHeight - spec.maxYRadius);
+  shape.quadraticCurveTo(halfWidth, halfHeight, halfWidth - spec.maxYRadius, halfHeight);
+  shape.lineTo(-halfWidth + spec.maxYRadius, halfHeight);
+  shape.quadraticCurveTo(-halfWidth, halfHeight, -halfWidth, halfHeight - spec.maxYRadius);
+  shape.lineTo(-halfWidth, -halfHeight + spec.minYRadius);
+  shape.quadraticCurveTo(-halfWidth, -halfHeight, -halfWidth + spec.minYRadius, -halfHeight);
+  shape.closePath();
+  spec.holes?.forEach((hole) => shape.holes.push(hole));
+  return shape;
+}
+
+export function crossShape(spec: { readonly total: number; readonly arm: number; readonly radius: number }): THREE.Shape {
+  const half = spec.total / 2;
+  const arm = spec.arm / 2;
+  const radius = Math.min(spec.radius, (half - arm) / 2);
+  const points: readonly (readonly [number, number])[] = [
+    [-arm, -half], [arm, -half], [arm, -arm], [half, -arm], [half, arm], [arm, arm],
+    [arm, half], [-arm, half], [-arm, arm], [-half, arm], [-half, -arm], [-arm, -arm],
   ];
   const shape = new THREE.Shape();
   points.forEach(([x, y], index) => {
     const previous = points[(index + points.length - 1) % points.length];
     const next = points[(index + 1) % points.length];
     if (!previous || !next) return;
-    const inX = x + Math.sign(previous[0] - x) * r;
-    const inY = y + Math.sign(previous[1] - y) * r;
-    const outX = x + Math.sign(next[0] - x) * r;
-    const outY = y + Math.sign(next[1] - y) * r;
-    if (index === 0) shape.moveTo(inX, inY);
-    else shape.lineTo(inX, inY);
-    shape.quadraticCurveTo(x, y, outX, outY);
+    const incoming = [x + Math.sign(previous[0] - x) * radius, y + Math.sign(previous[1] - y) * radius] as const;
+    const outgoing = [x + Math.sign(next[0] - x) * radius, y + Math.sign(next[1] - y) * radius] as const;
+    if (index === 0) shape.moveTo(incoming[0], incoming[1]);
+    else shape.lineTo(incoming[0], incoming[1]);
+    shape.quadraticCurveTo(x, y, outgoing[0], outgoing[1]);
   });
   shape.closePath();
   return shape;
 }
 
-export function roundedRectShape(width: number, height: number, radius: number): THREE.Shape {
-  const halfWidth = width / 2;
-  const halfHeight = height / 2;
-  const r = Math.min(radius, halfWidth, halfHeight);
-  const shape = new THREE.Shape();
-  shape.moveTo(-halfWidth + r, -halfHeight);
-  shape.lineTo(halfWidth - r, -halfHeight);
-  shape.quadraticCurveTo(halfWidth, -halfHeight, halfWidth, -halfHeight + r);
-  shape.lineTo(halfWidth, halfHeight - r);
-  shape.quadraticCurveTo(halfWidth, halfHeight, halfWidth - r, halfHeight);
-  shape.lineTo(-halfWidth + r, halfHeight);
-  shape.quadraticCurveTo(-halfWidth, halfHeight, -halfWidth, halfHeight - r);
-  shape.lineTo(-halfWidth, -halfHeight + r);
-  shape.quadraticCurveTo(-halfWidth, -halfHeight, -halfWidth + r, -halfHeight);
-  shape.closePath();
-  return shape;
+export function extrudedMesh(shape: THREE.Shape, spec: {
+  readonly thickness: number;
+  readonly material: THREE.Material;
+  readonly bevel?: number;
+}): THREE.Mesh {
+  const requestedBevel = spec.bevel ?? 0;
+  const bevel = Math.min(requestedBevel, Math.max(0, spec.thickness / 2 - 0.0001));
+  const coreDepth = spec.thickness - bevel * 2;
+  const geometry = new THREE.ExtrudeGeometry(shape, {
+    depth: coreDepth,
+    steps: 1,
+    curveSegments: 24,
+    bevelEnabled: bevel > 0,
+    bevelSegments: bevel > 0 ? 4 : 1,
+    bevelSize: bevel,
+    bevelThickness: bevel,
+    bevelOffset: -bevel,
+  });
+  geometry.translate(0, 0, -coreDepth / 2);
+  geometry.computeVertexNormals();
+  return new THREE.Mesh(geometry, spec.material);
 }
 
-export function cylinder(
-  radius: number,
-  depth: number,
-  material: THREE.Material,
-  segments = 32,
-): THREE.Mesh {
-  const mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, depth, segments), material);
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
+export function roundedBox(spec: {
+  readonly size: readonly [number, number, number];
+  readonly radius: number;
+  readonly material: THREE.Material;
+  readonly segments?: number;
+}): THREE.Mesh {
+  const geometry = new RoundedBoxGeometry(spec.size[0], spec.size[1], spec.size[2], spec.segments ?? 5, spec.radius);
+  return new THREE.Mesh(geometry, spec.material);
+}
+
+export function cylinderMesh(spec: {
+  readonly radius: number;
+  readonly depth: number;
+  readonly material: THREE.Material;
+  readonly segments?: number;
+  readonly openEnded?: boolean;
+}): THREE.Mesh {
+  const geometry = new THREE.CylinderGeometry(spec.radius, spec.radius, spec.depth, spec.segments ?? 40, 1, spec.openEnded ?? false);
+  return new THREE.Mesh(geometry, spec.material);
+}
+
+export function flatRoundedMesh(spec: {
+  readonly width: number;
+  readonly depth: number;
+  readonly thickness: number;
+  readonly radius: number;
+  readonly material: THREE.Material;
+  readonly bevel?: number;
+}): THREE.Mesh {
+  const mesh = extrudedMesh(roundedRectShape({ width: spec.width, height: spec.depth, radius: spec.radius }), {
+    thickness: spec.thickness,
+    material: spec.material,
+    bevel: spec.bevel ?? 0,
+  });
+  mesh.rotation.x = Math.PI / 2;
   return mesh;
 }
 
-export function addGlyph(group: THREE.Group, scale = 1, material: THREE.Material = materials.shellDeep): void {
-  const line = (width: number, x: number, y: number, rotation = 0): void => {
-    const mesh = roundedMesh([width * scale, 0.18 * scale, 0.12 * scale], 0.055 * scale, material, 3);
-    mesh.position.set(x * scale, y * scale, 0);
-    mesh.rotation.z = rotation;
-    group.add(mesh);
-  };
-  line(1.05, -1.2, 0.45);
-  line(1.05, -1.2, -0.45);
-  line(0.9, -1.7, 0, Math.PI / 2);
-  line(0.9, -0.7, 0, Math.PI / 2);
-  line(1.05, 0, 0.45);
-  line(1.05, 0, 0);
-  line(1.05, 0, -0.45);
-  line(0.9, -0.5, 0, Math.PI / 2);
-  line(0.45, 0.5, -0.23, Math.PI / 2);
-  line(1.05, 1.25, 0.45);
-  line(1.05, 1.25, -0.45);
-  line(0.62, 1.52, 0);
-  line(0.9, 0.72, 0, Math.PI / 2);
-  line(0.45, 1.77, -0.22, Math.PI / 2);
+export function frameMesh(spec: {
+  readonly outer: RoundedRectSpec;
+  readonly inner: RoundedRectSpec;
+  readonly thickness: number;
+  readonly material: THREE.Material;
+  readonly bevel?: number;
+}): THREE.Mesh {
+  const shape = roundedRectShape(spec.outer);
+  shape.holes.push(roundedRectHole(spec.inner));
+  return extrudedMesh(shape, { thickness: spec.thickness, material: spec.material, bevel: spec.bevel ?? 0 });
 }

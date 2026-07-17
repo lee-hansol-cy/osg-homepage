@@ -1,8 +1,10 @@
 import * as THREE from "three";
 import { generateClipPath } from "@lisse/core";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { CSS3DRenderer } from "three/examples/jsm/renderers/CSS3DRenderer.js";
-import { WORKS } from "./config";
+import { DEVICE, WORKS } from "./config";
 import { createDeviceModel, type DeviceAction } from "./device";
+import { mountDeviceLogos } from "./svg-logos";
 import { createScreenUi } from "./ui";
 import "./style.css";
 
@@ -16,7 +18,6 @@ app.innerHTML = `
   </header>
   <section class="stage" id="device" aria-label="Interactive folding portfolio device">
     <div class="render-layer" id="render-layer"></div>
-    <div class="stage-glow" aria-hidden="true"></div>
   </section>
   <footer class="site-controls">
     <p class="device-status" role="status">OPEN · WORK 05 / 09</p>
@@ -45,34 +46,44 @@ if (!renderLayer || !status || !hingeButton || !resetButton) throw new Error("In
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 360);
 const openCameraScale = (aspect: number): number => Math.max(1, 0.92 / aspect);
-camera.position.set(0, 104, 4);
-camera.lookAt(0, 0, -12);
+camera.position.set(0, 109.4, 4);
+camera.lookAt(0, 0, DEVICE.hingeZ);
 const cameraGoal = camera.position.clone();
-const cameraFocus = new THREE.Vector3(0, 0, -12);
+const cameraFocus = new THREE.Vector3(0, 0, DEVICE.hingeZ);
 const cameraFocusGoal = cameraFocus.clone();
+const closedCameraPosition = new THREE.Vector3(0, 110, 8);
+const closedCameraFocusZ = DEVICE.hingeZ + DEVICE.lowerDepth / 2;
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.shadowMap.enabled = false;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.NoToneMapping;
+renderer.toneMappingExposure = 0.94;
 renderer.domElement.className = "webgl-layer";
 renderLayer.append(renderer.domElement);
+
+const pmrem = new THREE.PMREMGenerator(renderer);
+const roomEnvironment = new RoomEnvironment();
+const environmentTarget = pmrem.fromScene(roomEnvironment, 0.04);
+scene.environment = environmentTarget.texture;
+scene.environmentIntensity = 0.35;
+roomEnvironment.dispose();
+pmrem.dispose();
 
 const cssRenderer = new CSS3DRenderer();
 cssRenderer.domElement.className = "css3d-layer";
 cssRenderer.domElement.style.overflow = "clip";
 renderLayer.append(cssRenderer.domElement);
 
-scene.add(new THREE.HemisphereLight(0xffffff, 0xffd8f8, 0.85));
-const key = new THREE.PointLight(0xffffff, 115, 130, 1.35);
-key.position.set(-6, 26, 44);
+scene.add(new THREE.HemisphereLight(0xffffff, 0xf4e9f2, 0.12));
+const key = new THREE.RectAreaLight(0xffffff, 5, 32, 20);
+key.position.set(-2, 34, 42);
+key.lookAt(0, 0, -8);
 scene.add(key);
-const rim = new THREE.PointLight(0xff8bea, 24, 80, 1.8);
-rim.position.set(30, 18, -24);
-scene.add(rim);
 
 const device = createDeviceModel();
+await mountDeviceLogos(device);
 scene.add(device.root);
 let focused = 4;
 const setStatus = (message: string): void => { status.textContent = message; };
@@ -84,22 +95,26 @@ const focusWork = (index: number): void => {
 const screens = createScreenUi({
   onFocus: focusWork,
   onOpenWork: (work) => {
-    screens.toggleDetail();
-    setStatus(`VIEWING · ${work.title.toUpperCase()}`);
+    const detailVisible = screens.toggleDetail();
+    setStatus(detailVisible ? `VIEWING · ${work.title}` : `OPEN · WORK ${String(focused + 1).padStart(2, "0")} / 09`);
   },
 });
 device.root.add(screens.bottomObject);
 device.upperPivot.add(screens.topObject);
 focusWork(focused);
 
+let hingeTransitioning = false;
 const setClosed = (closed: boolean): void => {
   device.setClosed(closed);
+  hingeTransitioning = true;
+  hingeButton.disabled = true;
+  screens.setVisible(false);
   const scale = openCameraScale(camera.aspect);
-  cameraGoal.set(0, closed ? 70 : 104 * scale, closed ? 38 : 4);
-  cameraFocusGoal.set(0, 0, closed ? 0 : -12);
+  cameraGoal.copy(closed ? closedCameraPosition : new THREE.Vector3(0, 109.4 * scale, 4));
+  cameraFocusGoal.set(0, 0, closed ? closedCameraFocusZ : DEVICE.hingeZ);
   hingeButton.textContent = closed ? "OPEN DEVICE" : "CLOSE DEVICE";
   hingeButton.setAttribute("aria-expanded", String(!closed));
-  setStatus(closed ? "CLOSED · OSG 001" : `OPEN · WORK ${String(focused + 1).padStart(2, "0")} / 09`);
+  setStatus(closed ? "CLOSING · OSG 001" : "OPENING · OSG 001");
 };
 hingeButton.addEventListener("click", () => setClosed(!device.isClosed()));
 resetButton.addEventListener("click", () => {
@@ -167,7 +182,7 @@ const resize = (): void => {
   const height = renderLayer.clientHeight;
   camera.aspect = width / height;
   const scale = openCameraScale(camera.aspect);
-  cameraGoal.set(0, device.isClosed() ? 70 : 104 * scale, device.isClosed() ? 38 : 4);
+  cameraGoal.copy(device.isClosed() ? closedCameraPosition : new THREE.Vector3(0, 109.4 * scale, 4));
   if (!device.isClosed()) camera.position.copy(cameraGoal);
   camera.updateProjectionMatrix();
   renderer.setSize(width, height, false);
@@ -197,6 +212,11 @@ renderer.setAnimationLoop(() => {
   if (nextVisible !== visible) {
     visible = nextVisible;
     screens.setVisible(visible);
+  }
+  if (hingeTransitioning && device.isHingeSettled()) {
+    hingeTransitioning = false;
+    hingeButton.disabled = false;
+    setStatus(device.isClosed() ? "CLOSED · OSG 001" : `OPEN · WORK ${String(focused + 1).padStart(2, "0")} / 09`);
   }
   renderer.render(scene, camera);
   cssRenderer.render(scene, camera);

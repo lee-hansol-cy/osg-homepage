@@ -1,9 +1,11 @@
 import * as THREE from "three";
-import { Brush, Evaluator, SUBTRACTION } from "three-bvh-csg";
+import { ADDITION, Brush, Evaluator, INTERSECTION, SUBTRACTION } from "three-bvh-csg";
 import { DEVICE, FILLET_REFERENCE, PHYSICAL, UPPER_POCKET_FILLET_REFERENCE, exteriorRadius, px } from "./config";
 import { catalogueStepForDpad, dpadTiltForDirection, type DpadDirection } from "./controls";
 import {
   circleHole,
+  asymmetricRoundedRectShape,
+  centerHingeShape,
   crossShape,
   cylinderMesh,
   extrudedMesh,
@@ -68,6 +70,30 @@ type UpperAssembly = {
   readonly outerLogoAnchor: THREE.Group;
   readonly badgeLogoAnchor: THREE.Group;
 };
+
+function brushFromMesh(mesh: THREE.Mesh, material: THREE.Material = materials.shell): Brush {
+  mesh.updateMatrix();
+  const brush = new Brush(mesh.geometry.clone(), material);
+  brush.geometry.applyMatrix4(mesh.matrix);
+  mesh.geometry.dispose();
+  return brush;
+}
+
+function upperSideProfileMatrix(): THREE.Matrix4 {
+  return new THREE.Matrix4().makeBasis(
+    new THREE.Vector3(0, 0, 1),
+    new THREE.Vector3(0, -1, 0),
+    new THREE.Vector3(1, 0, 0),
+  );
+}
+
+function lowerSideProfileMatrix(): THREE.Matrix4 {
+  return new THREE.Matrix4().makeBasis(
+    new THREE.Vector3(0, 1, 0),
+    new THREE.Vector3(0, 0, -1),
+    new THREE.Vector3(-1, 0, 0),
+  );
+}
 
 const hitMaterial = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false });
 hitMaterial.colorWrite = false;
@@ -367,7 +393,46 @@ function createLower(state: BuildState): LowerAssembly {
   }), { thickness: DEVICE.lowerThickness, material: materials.shell, bevel: px(1.2) });
   shell.rotation.x = Math.PI / 2;
   shell.position.y = DEVICE.lowerSurfaceY - DEVICE.lowerThickness / 2;
-  lower.add(shell);
+  shell.position.z = DEVICE.lowerPanelCenterZ;
+
+  const lowerSide = extrudedMesh(asymmetricRoundedRectShape({
+    width: DEVICE.lowerThickness,
+    height: DEVICE.lowerDepth,
+    radii: { topLeft: px(0), topRight: px(16), bottomRight: px(16), bottomLeft: px(2) },
+  }), { thickness: DEVICE.width, material: materials.shell });
+  lowerSide.setRotationFromMatrix(lowerSideProfileMatrix());
+  lowerSide.position.set(0, DEVICE.lowerSurfaceY - DEVICE.lowerThickness / 2, DEVICE.lowerPanelCenterZ);
+
+  const evaluator = new Evaluator();
+  evaluator.useGroups = false;
+  const lowerBody = evaluator.evaluate(brushFromMesh(shell), brushFromMesh(lowerSide), INTERSECTION);
+  lowerBody.name = "lowerShell";
+  lowerBody.material = materials.shell;
+  lowerBody.geometry.computeVertexNormals();
+
+  let lowerUnion: Brush = lowerBody;
+  [PHYSICAL.hinge.left, PHYSICAL.hinge.right].forEach((spec) => {
+    const hinge = extrudedMesh(asymmetricRoundedRectShape({
+      width: DEVICE.hingeRadius * 2,
+      height: DEVICE.hingeRadius * 2,
+      radii: { topLeft: DEVICE.sideHingeTopRadius, topRight: px(0), bottomRight: px(0), bottomLeft: DEVICE.hingeRadius },
+    }), {
+      thickness: spec.width,
+      material: materials.shell,
+      fillet: { radius: px(6), depth: px(6), segments: 12 },
+    });
+    hinge.setRotationFromMatrix(lowerSideProfileMatrix());
+    hinge.position.set(spec.x, DEVICE.hingeAxisY, DEVICE.hingeZ);
+    const hingeBrush = brushFromMesh(hinge);
+    const nextUnion = evaluator.evaluate(lowerUnion, hingeBrush, ADDITION);
+    lowerUnion.geometry.dispose();
+    hingeBrush.geometry.dispose();
+    lowerUnion = nextUnion;
+  });
+  lowerUnion.name = "lowerShellWithSideHinges";
+  lowerUnion.material = materials.shell;
+  lowerUnion.geometry.computeVertexNormals();
+  lower.add(lowerUnion);
   addLowerDisplay(lower);
   addDpad(lower, state);
   addRightButtons(lower, state);
@@ -450,10 +515,30 @@ function createUpper(): UpperAssembly {
     thickness: DEVICE.upperThickness, material: materials.shell,
   });
   base.position.set(0, DEVICE.panelHeight / 2 + DEVICE.hingeRadius, DEVICE.upperBodyCenterZ);
-  base.updateMatrix();
-  const baseBrush = new Brush(base.geometry.clone(), materials.shell);
-  baseBrush.geometry.applyMatrix4(base.matrix);
-  base.geometry.dispose();
+  const upperSide = extrudedMesh(asymmetricRoundedRectShape({
+    width: DEVICE.upperThickness,
+    height: DEVICE.panelHeight,
+    radii: { topLeft: px(0), topRight: px(0), bottomRight: px(2), bottomLeft: px(8) },
+  }), { thickness: DEVICE.width, material: materials.shell });
+  upperSide.setRotationFromMatrix(upperSideProfileMatrix());
+  upperSide.position.set(0, DEVICE.panelHeight / 2 + DEVICE.hingeRadius, DEVICE.upperBodyCenterZ);
+
+  const centerCoverMesh = extrudedMesh(centerHingeShape({
+    width: DEVICE.centerHingeRadius * 2,
+    height: DEVICE.centerHingeRadius * 2,
+    radius: DEVICE.centerHingeRadius,
+  }), {
+    thickness: PHYSICAL.hinge.center.coverWidth,
+    material: materials.shell,
+    fillet: { radius: px(6), depth: px(6), segments: 12 },
+  });
+  centerCoverMesh.rotation.y = -Math.PI / 2;
+
+  const evaluator = new Evaluator();
+  evaluator.useGroups = false;
+  const upperBody = evaluator.evaluate(brushFromMesh(base), brushFromMesh(upperSide), INTERSECTION);
+  const upperUnion = evaluator.evaluate(upperBody, brushFromMesh(centerCoverMesh), ADDITION);
+  upperBody.geometry.dispose();
 
   const pocketDepth = DEVICE.upperInsetDepth + UPPER_POCKET_FILLET_REFERENCE.depth + px(0.2);
   const pocket = extrudedMesh(panelShape(innerProfile), {
@@ -467,15 +552,14 @@ function createUpper(): UpperAssembly {
   pocketBrush.geometry.applyMatrix4(pocket.matrix);
   pocket.geometry.dispose();
 
-  const evaluator = new Evaluator();
-  evaluator.useGroups = false;
-  const upperShell = evaluator.evaluate(baseBrush, pocketBrush, SUBTRACTION);
+  const upperShell = evaluator.evaluate(upperUnion, pocketBrush, SUBTRACTION);
+  upperUnion.geometry.dispose();
+  pocketBrush.geometry.dispose();
   upperShell.name = "upperBackSkin";
   upperShell.material = materials.shell;
   upperShell.geometry.computeVertexNormals();
   pivot.add(upperShell);
-  baseBrush.geometry.dispose();
-  pocketBrush.geometry.dispose();
+  addCenterHingeCore(pivot);
   addUpperDisplay(pivot);
   PHYSICAL.speakerX.forEach((x) => PHYSICAL.speakerY.forEach((y) => {
     const aperture = cylinderMesh({ radius: PHYSICAL.speakerRadius, depth: px(1.6), material: materials.portVoid, segments: 24 });
@@ -485,24 +569,20 @@ function createUpper(): UpperAssembly {
   }));
   const anchors = addCameraAndBadge(pivot);
 
-  const centerCover = cylinderMesh({
-    radius: DEVICE.hingeRadius,
-    depth: PHYSICAL.hinge.center.coverWidth,
-    material: materials.shell,
-    segments: 64,
-  });
-  centerCover.rotation.z = Math.PI / 2;
-  pivot.add(centerCover);
   return { pivot, outerLogoAnchor: anchors.outer, badgeLogoAnchor: anchors.badge };
 }
 
-function addFixedHinges(root: THREE.Group): void {
-  [PHYSICAL.hinge.left, PHYSICAL.hinge.right].forEach((spec) => {
-    const barrel = cylinderMesh({ radius: DEVICE.hingeRadius, depth: spec.width, material: materials.shell, segments: 64 });
-    barrel.rotation.z = Math.PI / 2;
-    barrel.position.set(spec.x, DEVICE.hingeAxisY, DEVICE.hingeZ);
-    root.add(barrel);
+function addCenterHingeCore(pivot: THREE.Group): void {
+  const core = cylinderMesh({
+    radius: PHYSICAL.hinge.center.coreRadius,
+    depth: PHYSICAL.hinge.center.coreWidth,
+    material: materials.hingeCore,
+    segments: 64,
   });
+  core.name = "centerHingeCore";
+  core.rotation.z = Math.PI / 2;
+  core.position.set(0, 0, 0);
+  pivot.add(core);
 }
 
 export function createDeviceModel(): DeviceModel {
@@ -512,7 +592,6 @@ export function createDeviceModel(): DeviceModel {
   root.add(lower.group);
   const upper = createUpper();
   root.add(upper.pivot);
-  addFixedHinges(root);
 
   let closed = false;
   let toggleOn = true;

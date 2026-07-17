@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { getPathParamsForCorner } from "@lisse/core";
 import * as THREE from "three";
-import { extrudedMesh, panelShape, roundedRectShape } from "../src/geometry";
+import { asymmetricRoundedRectShape, centerHingeShape, extrudedMesh, panelShape, roundedRectShape } from "../src/geometry";
 import { px } from "../src/config";
 
 describe("continuous enclosure geometry", () => {
@@ -83,5 +83,24 @@ describe("continuous enclosure geometry", () => {
     });
     const options = mesh.geometry.parameters.options as { readonly bevelOffset: number };
     expect(options.bevelOffset).toBe(0);
+  });
+
+  test("builds the center hinge with a square lower-left union corner", () => {
+    const shape = centerHingeShape({ width: px(61), height: px(61), radius: px(30.5) });
+    const points = shape.extractPoints(4).shape;
+    expect(points[0]?.x).toBe(-px(30.5));
+    expect(points[0]?.y).toBe(-px(30.5));
+    expect(points.some((point) => point.x === -px(30.5) && point.y > -px(30.5))).toBe(true);
+  });
+
+  test("preserves the supplied asymmetric side radii", () => {
+    const shape = asymmetricRoundedRectShape({
+      width: px(64),
+      height: px(541),
+      radii: { topLeft: px(0), topRight: px(16), bottomRight: px(16), bottomLeft: px(2) },
+    });
+    const points = shape.extractPoints(4).shape;
+    expect(points.some((point) => point.x === -px(32) && point.y === px(541 / 2))).toBe(true);
+    expect(shape.curves.some((curve) => curve instanceof THREE.QuadraticBezierCurve)).toBe(true);
   });
 });

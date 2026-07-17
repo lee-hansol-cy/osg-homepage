@@ -27,16 +27,21 @@ const upperCenterY = (top: number, height: number): number => px(480 - top - hei
 const lowerCenterZ = (top: number, height: number): number => px(top + height / 2 - 240);
 
 const upperContactFaceZ = 0;
-const upperThickness = px(36);
+const upperThickness = px(28);
 const upperBackFaceZ = upperContactFaceZ - upperThickness;
 const upperOuterRadius = exteriorRadius(120);
 const upperHingeRadius = exteriorRadius(20);
+const centerHingeRadius = px(30.5);
+const sideHingeTopRadius = px(8);
+const lowerDepth = px(541);
+const lowerPanelCenterZ = -px(1.5);
 
 export const DEVICE = {
   width: px(800),
   panelHeight: px(480),
-  lowerDepth: px(480),
-  lowerThickness: px(63),
+  lowerDepth,
+  lowerPanelCenterZ,
+  lowerThickness: px(64),
   upperThickness,
   upperContactFaceZ,
   upperBackFaceZ,
@@ -49,6 +54,8 @@ export const DEVICE = {
   cornerSmoothing: 0.6,
   upperOuterRadius,
   upperHingeRadius,
+  centerHingeRadius,
+  sideHingeTopRadius,
   upperInsetOuterRadius: upperOuterRadius - px(6),
   upperInsetHingeRadius: upperHingeRadius - px(6),
   lowerOuterRadius: exteriorRadius(120),

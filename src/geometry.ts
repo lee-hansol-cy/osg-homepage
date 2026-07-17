@@ -71,6 +71,8 @@ type CornerRadii = {
   readonly bottomLeft: number;
 };
 
+export type AsymmetricCornerRadii = CornerRadii;
+
 type ResolvedCorners = {
   readonly topLeft: CornerPathParams;
   readonly topRight: CornerPathParams;
@@ -265,6 +267,35 @@ export function roundedRectHole(spec: RoundedRectSpec, continuous = true): THREE
   return path;
 }
 
+export function asymmetricRoundedRectShape(spec: {
+  readonly width: number;
+  readonly height: number;
+  readonly radii: AsymmetricCornerRadii;
+  readonly x?: number;
+  readonly y?: number;
+}): THREE.Shape {
+  const shape = new THREE.Shape();
+  const halfWidth = spec.width / 2;
+  const halfHeight = spec.height / 2;
+  const x = spec.x ?? 0;
+  const y = spec.y ?? 0;
+  const topLeft = Math.min(spec.radii.topLeft, halfWidth, halfHeight);
+  const topRight = Math.min(spec.radii.topRight, halfWidth, halfHeight);
+  const bottomRight = Math.min(spec.radii.bottomRight, halfWidth, halfHeight);
+  const bottomLeft = Math.min(spec.radii.bottomLeft, halfWidth, halfHeight);
+  shape.moveTo(x - halfWidth + topLeft, y + halfHeight);
+  shape.lineTo(x + halfWidth - topRight, y + halfHeight);
+  if (topRight > 0) shape.quadraticCurveTo(x + halfWidth, y + halfHeight, x + halfWidth, y + halfHeight - topRight);
+  shape.lineTo(x + halfWidth, y - halfHeight + bottomRight);
+  if (bottomRight > 0) shape.quadraticCurveTo(x + halfWidth, y - halfHeight, x + halfWidth - bottomRight, y - halfHeight);
+  shape.lineTo(x - halfWidth + bottomLeft, y - halfHeight);
+  if (bottomLeft > 0) shape.quadraticCurveTo(x - halfWidth, y - halfHeight, x - halfWidth, y - halfHeight + bottomLeft);
+  shape.lineTo(x - halfWidth, y + halfHeight - topLeft);
+  if (topLeft > 0) shape.quadraticCurveTo(x - halfWidth, y + halfHeight, x - halfWidth + topLeft, y + halfHeight);
+  shape.closePath();
+  return shape;
+}
+
 export function circleHole(spec: { readonly x: number; readonly y: number; readonly radius: number }): THREE.Path {
   const path = new THREE.Path();
   path.absarc(spec.x, spec.y, spec.radius, 0, Math.PI * 2, true);
@@ -315,6 +346,27 @@ export function panelHole(spec: {
       bottomLeft: spec.minYRadius,
     },
   });
+}
+
+export function centerHingeShape(spec: {
+  readonly width: number;
+  readonly height: number;
+  readonly radius: number;
+}): THREE.Shape {
+  const shape = new THREE.Shape();
+  const halfWidth = spec.width / 2;
+  const halfHeight = spec.height / 2;
+  const radius = Math.min(spec.radius, halfWidth, halfHeight);
+  shape.moveTo(-halfWidth, -halfHeight);
+  shape.lineTo(halfWidth - radius, -halfHeight);
+  shape.quadraticCurveTo(halfWidth, -halfHeight, halfWidth, -halfHeight + radius);
+  shape.lineTo(halfWidth, halfHeight - radius);
+  shape.quadraticCurveTo(halfWidth, halfHeight, halfWidth - radius, halfHeight);
+  shape.lineTo(-halfWidth + radius, halfHeight);
+  shape.quadraticCurveTo(-halfWidth, halfHeight, -halfWidth, halfHeight - radius);
+  shape.lineTo(-halfWidth, -halfHeight);
+  shape.closePath();
+  return shape;
 }
 
 export function crossShape(spec: {

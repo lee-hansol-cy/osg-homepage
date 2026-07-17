@@ -13,13 +13,17 @@ describe("Figma geometry contract", () => {
   });
 
   test("uses a flush closed contact plane and inset-matched exterior cover edges", () => {
-    expect(DEVICE.upperThickness).toBe(px(36));
-    expect(DEVICE.lowerThickness).toBe(3.15);
+    expect(DEVICE.upperThickness).toBe(px(28));
+    expect(DEVICE.lowerThickness).toBe(px(64));
+    expect(DEVICE.lowerDepth).toBe(px(541));
+    expect(DEVICE.lowerPanelCenterZ).toBe(-px(1.5));
     expect(DEVICE.upperContactFaceZ).toBe(0);
-    expect(DEVICE.upperBackFaceZ).toBe(-px(36));
+    expect(DEVICE.upperBackFaceZ).toBe(-px(28));
     expect(DEVICE.upperInnerSurfaceZ).toBe(-px(6));
     expect(DEVICE.upperOuterRadius).toBe(px(60));
     expect(DEVICE.upperHingeRadius).toBe(px(10));
+    expect(DEVICE.centerHingeRadius).toBe(px(30.5));
+    expect(DEVICE.sideHingeTopRadius).toBe(px(8));
     expect(DEVICE.upperInsetOuterRadius).toBeCloseTo(px(54), 10);
     expect(DEVICE.upperInsetHingeRadius).toBeCloseTo(px(4), 10);
     expect(DEVICE.lowerOuterRadius).toBe(px(60));

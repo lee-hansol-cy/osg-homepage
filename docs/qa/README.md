@@ -8,6 +8,6 @@ These true-PNG captures are the durable 1920 × 1080 verification set for the so
 - `osg-final-closed-1920.png`: settled closed state at the source 800 × 540 envelope.
 - `osg-final-hinge-mid-1920.png`: hinge in transit with CSS3D screen content hidden to prevent bleed/intersection.
 
-The upper/lower display bezels share the same 10px CSS radius, and the upper inset is a real 8px continuous bevel bridge rather than a background-visible gap. Closed-state stability was checked across four captures 100ms apart. Their decoded RGB pixels were identical, confirming that the thicker concave lid contains the internal structures without visible depth flicker.
+The lower display keeps its original black bezel. The upper shell is one CSG-carved solid: a 6px inset pocket leaves a flat shell-colored floor, a smooth 6px filleted shoulder, and a vertical wall in the same closed mesh. The upper screen/bezel, camera, and badge remain inside that pocket. Closed-state stability and incremental tilt must be checked across fresh captures; there are no separate upper face/rim/wall skins for an endpoint gap or depth flicker to form.
 
 The browser scenarios, exact type/geometry contracts, build results, limitations, and all user-mandated fidelity notes are recorded in `.debug-journal.md` and `.codex/session-logs/2026-07-17T23-06-22+09-00-osg-folding-portfolio.json`.

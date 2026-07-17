@@ -1,16 +1,16 @@
 {
   "session_id": "019f6fa6-f311-74b1-a897-8a4fd05e2c1a",
   "created_at": "2026-07-17T23:06:22+09:00",
-  "updated_at": "2026-07-18T02:18:00+09:00",
+  "updated_at": "2026-07-18T03:05:00+09:00",
   "workspace_root": "/Users/hansol/Documents/01 프로젝트/Personal Works/OSG/OSG Homepage",
   "branch": "codex/osg-folding-portfolio",
   "goal": "Build and document a source-faithful interactive Three.js folding OSG portfolio device for the 1920x1080 desktop frame.",
-  "progress_summary": "Reconciled the latest CSS exterior radii and bezel dimensions, added a continuous 8px upper inset bevel bridge, corrected the thicker back-skin contact placement, and verified the supplied character-logo engraving in live open/hinge/closed renders.",
+  "progress_summary": "Rebuilt the upper enclosure as one CSG-carved solid with a 6px inset pocket and restored a 6px smooth filleted shoulder inside that solid, eliminating overlapping upper skins and sealing the tilt-visible gap while preserving the original upper screen, camera, badge, and unchanged lower display treatment.",
   "implemented_features": [
     "Single 20:1 Figma-pixel-to-world-unit geometry contract",
     "Continuous articulated 170-degree hinge with exact 95/610/95 source envelopes",
     "Upper and lower shell thicknesses with inset-matched 60/58px continuous exterior radii",
-    "Continuous 8px upper inset bevel bridge with corrected back-skin outer contact",
+    "One-piece CSG-carved upper shell with a 6px inset pocket, vertical wall, and 6px filleted shoulder",
     "Equal 10px CSS-radius display bezels and physically bounded lower bevel",
     "Recessed speakers and upper display surround, glossy ABS, chrome badge, optical camera lens",
     "Supplied SVG geometry for placeholder, inner badge, and CSS character-logo lid engraving",
@@ -48,15 +48,18 @@
     "docs/qa/osg-final-dpad-down-pressed-1920.png",
     "docs/qa/osg-final-capsule-pressed-1920.png",
     "public/assets/osg-main-logo.svg",
-    "tests/geometry.test.ts"
+    "tests/geometry.test.ts",
+    ".claude/threejs-skills/"
   ],
   "verification": {
     "typecheck": "bun run check: pass",
-    "tests": "bun test: 9 pass, 0 fail, 55 expect calls",
+    "tests": "bun test: 14 pass, 0 fail, 67 expect calls",
     "production_build": "bun run build: pass; only the existing Vite 500 kB chunk advisory remains",
     "browser_console": "0 entries after hinge, physical control, toggle, theme, and closed-state capture scenarios",
     "browser_interactions": "wheel 4->5->4; keyboard horizontal unchanged and vertical changes; D-pad horizontal unchanged and vertical changes; right buttons 0/1/2; theme and motion pass",
-    "visual_diff": "Five 1920x1080 captures match; closed-state RGB is stable across four 100ms frames; the corrected engraving, bezel equality, and inset bridge were visually inspected at an angled open state"
+    "visual_diff": "Five fresh 1920x1080 captures completed with no browser errors; closed-state RGB is stable across four 100ms frames; four extreme incremental tilt captures were visually inspected with no obvious stage leak, while the screen, camera, badge, and lower display remained visible",
+    "server": "http://127.0.0.1:4173 returned HTTP 200; server kept running and Chrome was not opened",
+    "reference_install": "CloudAI-X/threejs-skills installed at .claude/threejs-skills, commit b1c623076c661fc9b03dac19292e825a5d106823"
   },
   "git_actions": [
     "Worked on codex/osg-folding-portfolio from clean base fa94767",
@@ -64,7 +67,7 @@
     "Created private GitHub repository https://github.com/lee-hansol-cy/osg-homepage",
     "Configured origin and gh auth setup-git",
     "Pushed 32de70af3f8e12de9a9f15ea62b75d192fa2c691 to origin/codex/osg-folding-portfolio",
-    "Committed the 2026-07-18 exterior correction checkpoint locally; no push performed"
+    "Committed locally with the carved upper fillet pocket; no push performed"
   ],
   "next_actions": [
     "Replace the source placeholder with final portfolio thumbnails when supplied",

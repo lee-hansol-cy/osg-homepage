@@ -10,6 +10,18 @@ export function exteriorRadius(sourcePixels: number): number {
   return px(sourcePixels * EXTERIOR_CURVE_SCALE);
 }
 
+export const FILLET_REFERENCE = {
+  radius: px(12),
+  depth: px(8),
+  segments: 12,
+} as const;
+
+export const UPPER_POCKET_FILLET_REFERENCE = {
+  radius: px(6),
+  depth: px(6),
+  segments: 12,
+} as const;
+
 const panelCenterX = (left: number, width: number): number => px(left + width / 2 - 400);
 const upperCenterY = (top: number, height: number): number => px(480 - top - height / 2);
 const lowerCenterZ = (top: number, height: number): number => px(top + height / 2 - 240);
@@ -17,6 +29,8 @@ const lowerCenterZ = (top: number, height: number): number => px(top + height / 
 const upperContactFaceZ = 0;
 const upperThickness = px(36);
 const upperBackFaceZ = upperContactFaceZ - upperThickness;
+const upperOuterRadius = exteriorRadius(120);
+const upperHingeRadius = exteriorRadius(20);
 
 export const DEVICE = {
   width: px(800),
@@ -27,16 +41,16 @@ export const DEVICE = {
   upperContactFaceZ,
   upperBackFaceZ,
   upperBodyCenterZ: (upperContactFaceZ + upperBackFaceZ) / 2,
-  upperInsetDepth: px(8),
-  upperInnerSurfaceZ: -px(8),
+  upperInsetDepth: px(6),
+  upperInnerSurfaceZ: -px(6),
   upperInternalClearance: px(1.2),
   upperInternalMaxZ: upperContactFaceZ - px(1.2),
   lowerSurfaceY: px(18),
   cornerSmoothing: 0.6,
-  upperOuterRadius: exteriorRadius(120),
-  upperHingeRadius: exteriorRadius(20),
-  upperInsetOuterRadius: exteriorRadius(116),
-  upperInsetHingeRadius: exteriorRadius(16),
+  upperOuterRadius,
+  upperHingeRadius,
+  upperInsetOuterRadius: upperOuterRadius - px(6),
+  upperInsetHingeRadius: upperHingeRadius - px(6),
   lowerOuterRadius: exteriorRadius(120),
   lowerHingeRadius: 0,
   hingeEnvelope: px(60),

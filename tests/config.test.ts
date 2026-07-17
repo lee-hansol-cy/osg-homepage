@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { DEVICE, FIGMA_PIXELS_PER_WORLD_UNIT, PHYSICAL, px } from "../src/config";
+import { DEVICE, FILLET_REFERENCE, FIGMA_PIXELS_PER_WORLD_UNIT, PHYSICAL, UPPER_POCKET_FILLET_REFERENCE, px } from "../src/config";
 
 describe("Figma geometry contract", () => {
   test("derives every primary enclosure dimension from the shared 20:1 scale", () => {
@@ -17,13 +17,25 @@ describe("Figma geometry contract", () => {
     expect(DEVICE.lowerThickness).toBe(3.15);
     expect(DEVICE.upperContactFaceZ).toBe(0);
     expect(DEVICE.upperBackFaceZ).toBe(-px(36));
-    expect(DEVICE.upperInnerSurfaceZ).toBe(-px(8));
+    expect(DEVICE.upperInnerSurfaceZ).toBe(-px(6));
     expect(DEVICE.upperOuterRadius).toBe(px(60));
     expect(DEVICE.upperHingeRadius).toBe(px(10));
-    expect(DEVICE.upperInsetOuterRadius).toBe(px(58));
-    expect(DEVICE.upperInsetHingeRadius).toBe(px(8));
+    expect(DEVICE.upperInsetOuterRadius).toBeCloseTo(px(54), 10);
+    expect(DEVICE.upperInsetHingeRadius).toBeCloseTo(px(4), 10);
     expect(DEVICE.lowerOuterRadius).toBe(px(60));
     expect(DEVICE.lowerHingeRadius).toBe(0);
+  });
+
+  test("keeps the enclosure fillet tied to the CSS highlight values", () => {
+    expect(FILLET_REFERENCE.radius).toBe(px(12));
+    expect(FILLET_REFERENCE.depth).toBe(px(8));
+    expect(FILLET_REFERENCE.segments).toBe(12);
+  });
+
+  test("keeps the upper pocket fillet inside the six-pixel inset", () => {
+    expect(UPPER_POCKET_FILLET_REFERENCE.radius).toBe(px(6));
+    expect(UPPER_POCKET_FILLET_REFERENCE.depth).toBe(px(6));
+    expect(UPPER_POCKET_FILLET_REFERENCE.segments).toBe(12);
   });
 
   test("preserves exact hinge and control source envelopes", () => {

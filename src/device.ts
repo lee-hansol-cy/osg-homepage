@@ -1,5 +1,6 @@
 import * as THREE from "three";
-import { DEVICE, PHYSICAL, exteriorRadius, px } from "./config";
+import { Brush, Evaluator, SUBTRACTION } from "three-bvh-csg";
+import { DEVICE, FILLET_REFERENCE, PHYSICAL, UPPER_POCKET_FILLET_REFERENCE, exteriorRadius, px } from "./config";
 import { catalogueStepForDpad, dpadTiltForDirection, type DpadDirection } from "./controls";
 import {
   circleHole,
@@ -150,7 +151,7 @@ function addLowerDisplay(lower: THREE.Group): void {
     },
     thickness: px(3),
     material: shoulderMaterial,
-    bevel: px(1.2),
+    fillet: FILLET_REFERENCE,
   });
   shoulder.rotation.x = Math.PI / 2;
   shoulder.position.set(0, DEVICE.lowerSurfaceY + px(1.5), DEVICE.lowerScreenCenterZ);
@@ -436,45 +437,45 @@ function addCameraAndBadge(pivot: THREE.Group): { readonly outer: THREE.Group; r
 function createUpper(): UpperAssembly {
   const pivot = new THREE.Group();
   pivot.position.set(0, DEVICE.hingeAxisY, DEVICE.hingeZ);
-  const holes: THREE.Path[] = [roundedRectHole({
-    width: DEVICE.bezelWidth, height: DEVICE.bezelHeight, radius: DEVICE.upperBezelRadius,
-    y: DEVICE.screenCenterY - DEVICE.panelHeight / 2,
-  })];
-  PHYSICAL.speakerX.forEach((x) => PHYSICAL.speakerY.forEach((y) => {
-    holes.push(circleHole({ x, y: y - DEVICE.panelHeight / 2, radius: PHYSICAL.speakerRadius }));
-  }));
   const profile = {
     width: DEVICE.width, height: DEVICE.panelHeight,
     minYRadius: DEVICE.upperHingeRadius, maxYRadius: DEVICE.upperOuterRadius,
   } as const;
   const innerProfile = {
-    width: px(784), height: px(464),
+    width: DEVICE.width - DEVICE.upperInsetDepth * 2,
+    height: DEVICE.panelHeight - DEVICE.upperInsetDepth * 2,
     minYRadius: DEVICE.upperInsetHingeRadius, maxYRadius: DEVICE.upperInsetOuterRadius,
   } as const;
-  const body = extrudedMesh(panelShape({ ...profile, holes: [panelHole(innerProfile)] }), {
-    thickness: DEVICE.upperThickness, material: materials.shell, bevel: px(2.8),
+  const base = extrudedMesh(panelShape(profile), {
+    thickness: DEVICE.upperThickness, material: materials.shell,
   });
-  body.position.set(0, DEVICE.panelHeight / 2 + DEVICE.hingeRadius, DEVICE.upperBodyCenterZ);
-  pivot.add(body);
-  const insetBridge = extrudedMesh(panelShape({ ...profile, holes: [panelHole(innerProfile)] }), {
-    thickness: DEVICE.upperInsetDepth, material: materials.shell, bevel: px(1.2),
+  base.position.set(0, DEVICE.panelHeight / 2 + DEVICE.hingeRadius, DEVICE.upperBodyCenterZ);
+  base.updateMatrix();
+  const baseBrush = new Brush(base.geometry.clone(), materials.shell);
+  baseBrush.geometry.applyMatrix4(base.matrix);
+  base.geometry.dispose();
+
+  const pocketDepth = DEVICE.upperInsetDepth + UPPER_POCKET_FILLET_REFERENCE.depth + px(0.2);
+  const pocket = extrudedMesh(panelShape(innerProfile), {
+    thickness: pocketDepth,
+    material: materials.shell,
+    fillet: { ...UPPER_POCKET_FILLET_REFERENCE, bevelOffset: -UPPER_POCKET_FILLET_REFERENCE.radius },
   });
-  insetBridge.name = "upperInsetBevel";
-  insetBridge.position.set(
-    0,
-    DEVICE.panelHeight / 2 + DEVICE.hingeRadius,
-    DEVICE.upperInnerSurfaceZ / 2 - px(0.1),
-  );
-  pivot.add(insetBridge);
-  const innerSkin = extrudedMesh(panelShape({ ...innerProfile, holes }), {
-    thickness: px(3.2), material: materials.shell, bevel: px(0.6),
-  });
-  innerSkin.position.set(0, DEVICE.panelHeight / 2 + DEVICE.hingeRadius, DEVICE.upperInnerSurfaceZ - px(1.2));
-  pivot.add(innerSkin);
-  const backSkin = extrudedMesh(panelShape(profile), { thickness: px(3.2), material: materials.shell, bevel: px(0.6) });
-  backSkin.name = "upperBackSkin";
-  backSkin.position.set(0, DEVICE.panelHeight / 2 + DEVICE.hingeRadius, DEVICE.upperBackFaceZ + px(1.6));
-  pivot.add(backSkin);
+  pocket.position.set(0, DEVICE.panelHeight / 2 + DEVICE.hingeRadius, DEVICE.upperContactFaceZ);
+  pocket.updateMatrix();
+  const pocketBrush = new Brush(pocket.geometry.clone(), materials.shell);
+  pocketBrush.geometry.applyMatrix4(pocket.matrix);
+  pocket.geometry.dispose();
+
+  const evaluator = new Evaluator();
+  evaluator.useGroups = false;
+  const upperShell = evaluator.evaluate(baseBrush, pocketBrush, SUBTRACTION);
+  upperShell.name = "upperBackSkin";
+  upperShell.material = materials.shell;
+  upperShell.geometry.computeVertexNormals();
+  pivot.add(upperShell);
+  baseBrush.geometry.dispose();
+  pocketBrush.geometry.dispose();
   addUpperDisplay(pivot);
   PHYSICAL.speakerX.forEach((x) => PHYSICAL.speakerY.forEach((y) => {
     const aperture = cylinderMesh({ radius: PHYSICAL.speakerRadius, depth: px(1.6), material: materials.portVoid, segments: 24 });

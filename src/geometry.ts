@@ -78,6 +78,13 @@ type ResolvedCorners = {
   readonly bottomLeft: CornerPathParams;
 };
 
+export type FilletSpec = {
+  readonly radius: number;
+  readonly depth?: number;
+  readonly segments?: number;
+  readonly bevelOffset?: number;
+};
+
 function resolveContinuousCorners(width: number, height: number, radii: CornerRadii, smoothing: number): ResolvedCorners {
   const normalized = distributeAndNormalize({
     topLeftCornerRadius: radii.topLeft,
@@ -345,19 +352,23 @@ export function extrudedMesh(shape: THREE.Shape, spec: {
   readonly thickness: number;
   readonly material: THREE.Material;
   readonly bevel?: number;
+  readonly fillet?: number | FilletSpec;
 }): THREE.Mesh {
-  const requestedBevel = spec.bevel ?? 0;
-  const bevel = Math.min(requestedBevel, Math.max(0, spec.thickness / 2 - 0.0001));
-  const coreDepth = spec.thickness - bevel * 2;
+  const fillet = typeof spec.fillet === "number" ? { radius: spec.fillet } : spec.fillet;
+  const legacyBevel = spec.bevel ?? 0;
+  const radius = fillet?.radius ?? legacyBevel;
+  const requestedDepth = fillet?.depth ?? legacyBevel;
+  const depth = Math.min(requestedDepth, Math.max(0, spec.thickness / 2 - 0.0001));
+  const coreDepth = spec.thickness - depth * 2;
   const geometry = new THREE.ExtrudeGeometry(shape, {
     depth: coreDepth,
     steps: 1,
     curveSegments: 24,
-    bevelEnabled: bevel > 0,
-    bevelSegments: bevel > 0 ? 4 : 1,
-    bevelSize: bevel,
-    bevelThickness: bevel,
-    bevelOffset: -bevel,
+    bevelEnabled: radius > 0 && depth > 0,
+    bevelSegments: radius > 0 && depth > 0 ? fillet?.segments ?? (fillet ? 8 : 4) : 1,
+    bevelSize: radius,
+    bevelThickness: depth,
+    bevelOffset: fillet?.bevelOffset ?? -radius,
   });
   geometry.translate(0, 0, -coreDepth / 2);
   geometry.computeVertexNormals();
@@ -403,12 +414,14 @@ export function flatRoundedMesh(spec: {
   readonly radius: number;
   readonly material: THREE.Material;
   readonly bevel?: number;
+  readonly fillet?: number | FilletSpec;
   readonly continuous?: boolean;
 }): THREE.Mesh {
   const mesh = extrudedMesh(roundedRectShape({ width: spec.width, height: spec.depth, radius: spec.radius }, spec.continuous ?? true), {
     thickness: spec.thickness,
     material: spec.material,
-    bevel: spec.bevel ?? 0,
+    ...(spec.bevel === undefined ? {} : { bevel: spec.bevel }),
+    ...(spec.fillet === undefined ? {} : { fillet: spec.fillet }),
   });
   mesh.rotation.x = Math.PI / 2;
   return mesh;
@@ -420,8 +433,14 @@ export function frameMesh(spec: {
   readonly thickness: number;
   readonly material: THREE.Material;
   readonly bevel?: number;
+  readonly fillet?: number | FilletSpec;
 }): THREE.Mesh {
   const shape = roundedRectShape(spec.outer);
   shape.holes.push(roundedRectHole(spec.inner));
-  return extrudedMesh(shape, { thickness: spec.thickness, material: spec.material, bevel: spec.bevel ?? 0 });
+  return extrudedMesh(shape, {
+    thickness: spec.thickness,
+    material: spec.material,
+    ...(spec.bevel === undefined ? {} : { bevel: spec.bevel }),
+    ...(spec.fillet === undefined ? {} : { fillet: spec.fillet }),
+  });
 }

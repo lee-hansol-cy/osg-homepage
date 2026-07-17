@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { getPathParamsForCorner } from "@lisse/core";
 import * as THREE from "three";
-import { panelShape, roundedRectShape } from "../src/geometry";
+import { extrudedMesh, panelShape, roundedRectShape } from "../src/geometry";
 import { px } from "../src/config";
 
 describe("continuous enclosure geometry", () => {
@@ -37,5 +37,51 @@ describe("continuous enclosure geometry", () => {
       if (arc.aClockwise) sweep = Math.PI * 2 - sweep;
       expect(sweep).toBeLessThanOrEqual(Math.PI / 2);
     });
+  });
+
+  test("builds broad CSS-sized fillets with a smooth round profile", () => {
+    const mesh = extrudedMesh(roundedRectShape({ width: px(800), height: px(480), radius: px(60) }), {
+      thickness: px(36),
+      material: new THREE.MeshBasicMaterial(),
+      fillet: { radius: px(12), depth: px(8), segments: 12 },
+    });
+    const options = mesh.geometry.parameters.options as {
+      readonly bevelEnabled: boolean;
+      readonly bevelSegments: number;
+      readonly bevelSize: number;
+      readonly bevelThickness: number;
+    };
+
+    expect(options.bevelEnabled).toBe(true);
+    expect(options.bevelSegments).toBe(12);
+    expect(options.bevelSize).toBe(px(12));
+    expect(options.bevelThickness).toBe(px(8));
+  });
+
+  test("keeps rolled-back surfaces on the legacy four-segment bevel path", () => {
+    const mesh = extrudedMesh(roundedRectShape({ width: px(112), height: px(42), radius: px(21) }), {
+      thickness: px(1.2),
+      material: new THREE.MeshBasicMaterial(),
+      bevel: px(0.25),
+    });
+    const options = mesh.geometry.parameters.options as {
+      readonly bevelSegments: number;
+      readonly bevelSize: number;
+      readonly bevelThickness: number;
+    };
+
+    expect(options.bevelSegments).toBe(4);
+    expect(options.bevelSize).toBe(px(0.25));
+    expect(options.bevelThickness).toBe(px(0.25));
+  });
+
+  test("allows an inner fillet to terminate on its adjoining flat face", () => {
+    const mesh = extrudedMesh(roundedRectShape({ width: px(784), height: px(464), radius: px(58) }), {
+      thickness: px(8),
+      material: new THREE.MeshBasicMaterial(),
+      fillet: { radius: px(2), depth: px(0.6), segments: 6, bevelOffset: 0 },
+    });
+    const options = mesh.geometry.parameters.options as { readonly bevelOffset: number };
+    expect(options.bevelOffset).toBe(0);
   });
 });

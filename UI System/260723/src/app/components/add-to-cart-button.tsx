@@ -87,7 +87,7 @@ const TONES = {
     insetTop: "rgba(251,225,246,0.6)",
     insetBottom: "rgba(240,43,209,0.6)",
     hoverInsetBottom: "rgba(245,112,224,0.6)",
-    baseBorder: "#000000",
+    baseBorder: "#f02bd1",
     baseText: "#ffffff",
     hoverBorder: "#f02bd1",
     hoverText: "#f02bd1",
@@ -235,7 +235,7 @@ function ButtonBody({
   useSmoothCorners(chromeRef, corners, {
     wrapperRef: rootRef,
     effects: {
-      middleBorder: { width: 1, color: chromeActive ? tone.hoverBorder : tone.baseBorder },
+      innerBorder: { width: 1, color: chromeActive ? tone.hoverBorder : tone.baseBorder },
       innerShadow: [
         {
           offsetX: 0,

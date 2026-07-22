@@ -70,7 +70,7 @@ export function TopBar({ initialPage = "Works" }: { initialPage?: NavItem }) {
     {
       wrapperRef: capsuleRef,
       effects: {
-        middleBorder: { width: 1, color: "#000000" },
+        innerBorder: { width: 1, color: "#000000" },
         innerShadow: [
           { offsetX: 0, offsetY: -10, blur: 15, spread: 0, color: "#f02bd1", opacity: 0.6 },
           { offsetX: 0, offsetY: 15, blur: 15, spread: 0, color: "#fbe1f6", opacity: 0.6 },

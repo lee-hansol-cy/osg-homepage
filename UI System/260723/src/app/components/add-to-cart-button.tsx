@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion } from "motion/react";
+import { SmoothCorners, useSmoothCorners } from "@lisse/react";
+import { DEFAULT_SMOOTHING } from "@lisse/core";
 import buyReflect from "../../imports/BuyItNow버튼/835be69efb66b4fa2c6eec6a9cb8abaadf28d07e.png";
 import buyReflectHover from "../../imports/BuyItNow버튼호버/835be69efb66b4fa2c6eec6a9cb8abaadf28d07e.png";
 
@@ -221,17 +223,50 @@ function ButtonBody({
   const isInstant = transition === "none";
   const labelOffset = px(FIGMA.labelCenterY - FIGMA.bodyHeight / 2, height);
   const chromeActive = active && !staticChrome;
+  const corners = { radius, smoothing: DEFAULT_SMOOTHING };
+  const reflectCorners = {
+    topLeft: { radius: px(FIGMA.reflectRadiusTop, height), smoothing: DEFAULT_SMOOTHING },
+    topRight: { radius: px(FIGMA.reflectRadiusTop, height), smoothing: DEFAULT_SMOOTHING },
+    bottomRight: { radius: px(FIGMA.reflectRadiusBottom, height), smoothing: DEFAULT_SMOOTHING },
+    bottomLeft: { radius: px(FIGMA.reflectRadiusBottom, height), smoothing: DEFAULT_SMOOTHING },
+  };
+  const rootRef = useRef<HTMLDivElement>(null);
+  const chromeRef = useRef<HTMLDivElement>(null);
+  useSmoothCorners(chromeRef, corners, {
+    wrapperRef: rootRef,
+    effects: {
+      middleBorder: { width: 1, color: chromeActive ? tone.hoverBorder : tone.baseBorder },
+      innerShadow: [
+        {
+          offsetX: 0,
+          offsetY: px(FIGMA.topInsetShadowY, height),
+          blur: px(FIGMA.topInsetShadowBlur, height),
+          spread: 0,
+          color: tone.insetTop,
+          opacity: 1,
+        },
+        {
+          offsetX: 0,
+          offsetY: -px(FIGMA.bottomInsetShadowY, height),
+          blur: px(FIGMA.bottomInsetShadowBlur, height),
+          spread: 0,
+          color: chromeActive ? tone.hoverInsetBottom ?? tone.insetBottom : tone.insetBottom,
+          opacity: 1,
+        },
+      ],
+    },
+  });
 
   return (
     <div
+      ref={rootRef}
       className="absolute inset-0"
       style={{
-        borderRadius: radius,
         /* Press feedback is deliberately instant on every breakpoint. */
         filter: pressed ? "brightness(1.04)" : "none",
       }}
     >
-      <div className="absolute inset-0 overflow-hidden" style={{ borderRadius: radius }}>
+      <div ref={chromeRef} className="absolute inset-0">
         <div
           className="absolute inset-0"
           style={{
@@ -261,25 +296,18 @@ function ButtonBody({
             transition: isInstant ? "none" : `background ${transition}`,
           }}
         />
-        <div
-          className="absolute inset-0"
-          style={{
-            boxShadow: `inset 0 ${px(FIGMA.topInsetShadowY, height)}px ${px(FIGMA.topInsetShadowBlur, height)}px ${tone.insetTop}, inset 0 -${px(FIGMA.bottomInsetShadowY, height)}px ${px(FIGMA.bottomInsetShadowBlur, height)}px ${chromeActive ? tone.hoverInsetBottom ?? tone.insetBottom : tone.insetBottom}`,
-            transition: isInstant ? "none" : `box-shadow ${transition}`,
-          }}
-        />
-        <div
-          className="absolute overflow-hidden"
+        <SmoothCorners
+          className="absolute"
+          corners={reflectCorners}
           style={{
             left: horizontal(FIGMA.reflectLeft),
             top: px(FIGMA.reflectTop, height),
             width: horizontal(FIGMA.reflectWidth),
             height: px(FIGMA.reflectHeight, height),
-            borderRadius: `${px(FIGMA.reflectRadiusTop, height)}px ${px(FIGMA.reflectRadiusTop, height)}px ${px(FIGMA.reflectRadiusBottom, height)}px ${px(FIGMA.reflectRadiusBottom, height)}px`,
           }}
         >
           <img alt="" src={active ? tone.reflectHover : tone.reflect} className="block size-full max-w-none object-cover" />
-        </div>
+        </SmoothCorners>
       </div>
 
       <div
@@ -297,15 +325,6 @@ function ButtonBody({
       >
         {tone.label}
       </div>
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 border"
-        style={{
-          borderRadius: radius,
-          borderColor: chromeActive ? tone.hoverBorder : tone.baseBorder,
-          transition: isInstant ? "none" : `border-color ${transition}`,
-        }}
-      />
     </div>
   );
 }

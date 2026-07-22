@@ -1,5 +1,7 @@
-import { useState, type CSSProperties } from "react";
+import { useRef, useState } from "react";
 import { motion } from "motion/react";
+import { SmoothCorners, useSmoothCorners } from "@lisse/react";
+import { DEFAULT_SMOOTHING, generateClipPath } from "@lisse/core";
 import osgLogo from "../../assets/osg-logo-topbar.png";
 
 /**
@@ -11,8 +13,6 @@ const FIGMA = {
   areaHeight: 100,
   capsuleTop: 20,
   capsuleHeight: 64,
-  capsuleMaxWidth: 1440,
-  capsuleClearance: 240,
   glowInsetXPercent: (43.2 / 1440) * 100,
   glowTop: 14.93,
   glowHeight: 49.07,
@@ -22,10 +22,9 @@ const FIGMA = {
   glossHeight: 21,
   glossRadiusTop: 70,
   glossRadiusBottom: 30,
-  cartRight: 24,
-  cartTop: 7,
-  cartWidth: 96,
-  cartHeight: 49,
+  hoverCapsuleWidth: 96,
+  hoverCapsuleHeight: 49,
+  hoverCapsuleTop: 7,
   logoTop: 8,
   logoWidth: 70,
   logoHeight: 48,
@@ -47,16 +46,38 @@ const FIGMA = {
 const NAV_ITEMS = ["Works", "Shop", "About"] as const;
 type NavItem = (typeof NAV_ITEMS)[number];
 
-const promoStyle: CSSProperties = {
+const DOT_CLIP_PATH = generateClipPath(FIGMA.dotWidth, FIGMA.dotHeight, {
+  radius: FIGMA.dotHeight / 2,
+  smoothing: DEFAULT_SMOOTHING,
+});
+
+const promoStyle = {
   width: FIGMA.promoWidth,
   height: FIGMA.promoHeight,
   background: "linear-gradient(90deg, #95d1ff 0%, rgba(224, 242, 255, 0.365) 100%)",
   border: "1px solid #000000",
-};
+} as const;
 
 /** OSG 메인페이지 상단 캡슐 내비게이션. 1920 디자인 기준, 좌우 240px 여유를 유지하며 줄어듦. */
 export function TopBar({ initialPage = "Works" }: { initialPage?: NavItem }) {
   const [active, setActive] = useState<NavItem>(initialPage);
+  const [hovered, setHovered] = useState<NavItem | null>(null);
+  const capsuleRef = useRef<HTMLDivElement>(null);
+  const chromeRef = useRef<HTMLDivElement>(null);
+  useSmoothCorners(
+    chromeRef,
+    { radius: FIGMA.capsuleHeight / 2, smoothing: DEFAULT_SMOOTHING },
+    {
+      wrapperRef: capsuleRef,
+      effects: {
+        middleBorder: { width: 1, color: "#000000" },
+        innerShadow: [
+          { offsetX: 0, offsetY: -10, blur: 15, spread: 0, color: "#f02bd1", opacity: 0.6 },
+          { offsetX: 0, offsetY: 15, blur: 15, spread: 0, color: "#fbe1f6", opacity: 0.6 },
+        ],
+      },
+    },
+  );
 
   return (
     <header className="relative w-full" style={{ height: FIGMA.areaHeight }}>
@@ -71,26 +92,16 @@ export function TopBar({ initialPage = "Works" }: { initialPage?: NavItem }) {
         style={{ right: FIGMA.promoRight, top: FIGMA.promoTop + 2, ...promoStyle }}
       />
 
-      {/* top bar capsule */}
       <div
+        ref={capsuleRef}
         className="absolute left-1/2 w-[min(1440px,calc(100%-480px))] min-w-[720px] -translate-x-1/2"
         style={{ top: FIGMA.capsuleTop, height: FIGMA.capsuleHeight, opacity: 0.8 }}
       >
         <div
-          className="absolute inset-0 overflow-hidden"
-          style={{ borderRadius: 9999, border: "1px solid #000000" }}
+          ref={chromeRef}
+          className="absolute inset-0"
+          style={{ background: "linear-gradient(90deg, #f02bd1 0%, #ff81ea 100%)" }}
         >
-          <div
-            className="absolute inset-0"
-            style={{ background: "linear-gradient(90deg, #f02bd1 0%, #ff81ea 100%)" }}
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              boxShadow:
-                "inset 0 -10px 15px rgba(240, 43, 209, 0.6), inset 0 15px 15px rgba(251, 225, 246, 0.6)",
-            }}
-          />
           <div
             className="absolute"
             style={{
@@ -103,56 +114,45 @@ export function TopBar({ initialPage = "Works" }: { initialPage?: NavItem }) {
               filter: `blur(${FIGMA.glowBlur}px)`,
             }}
           />
-          <div
+          <SmoothCorners
             className="absolute"
+            corners={{
+              topLeft: { radius: FIGMA.glossRadiusTop, smoothing: DEFAULT_SMOOTHING },
+              topRight: { radius: FIGMA.glossRadiusTop, smoothing: DEFAULT_SMOOTHING },
+              bottomRight: { radius: FIGMA.glossRadiusBottom, smoothing: DEFAULT_SMOOTHING },
+              bottomLeft: { radius: FIGMA.glossRadiusBottom, smoothing: DEFAULT_SMOOTHING },
+            }}
             style={{
               left: FIGMA.glossInsetX,
               right: FIGMA.glossInsetX,
               top: FIGMA.glossTop,
               height: FIGMA.glossHeight,
-              borderRadius: `${FIGMA.glossRadiusTop}px ${FIGMA.glossRadiusTop}px ${FIGMA.glossRadiusBottom}px ${FIGMA.glossRadiusBottom}px`,
               background: "linear-gradient(180deg, #fbe1f6 0%, rgba(251, 225, 246, 0.2) 100%)",
             }}
           />
         </div>
 
-        <motion.button
-          type="button"
-          aria-label="Cart"
-          whileHover={{ opacity: 1, y: -1.5 }}
-          whileTap={{ scale: 0.97 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
-          className="absolute cursor-pointer border-0 p-0 outline-none"
-          style={{
-            right: FIGMA.cartRight,
-            top: FIGMA.cartTop,
-            width: FIGMA.cartWidth,
-            height: FIGMA.cartHeight,
-            borderRadius: 9999,
-            background: "linear-gradient(180deg, #fbe1f6 0%, rgba(251, 225, 246, 0.2) 100%)",
-            opacity: 0.8,
-          }}
-        />
-
-        <img
-          src={osgLogo}
-          alt="OSG"
-          className="pointer-events-none absolute left-1/2 -translate-x-1/2 select-none"
+        <a
+          href="/"
+          aria-label="OSG 홈"
+          className="absolute left-1/2 -translate-x-1/2"
           style={{ top: FIGMA.logoTop, width: FIGMA.logoWidth, height: FIGMA.logoHeight }}
-        />
+        >
+          <img src={osgLogo} alt="" className="block size-full select-none" />
+        </a>
 
         <nav
           aria-label="OSG main navigation"
           className="absolute hidden items-center md:flex"
           style={{ right: FIGMA.navRight, top: FIGMA.navTop, height: FIGMA.navHeight, gap: FIGMA.navGap }}
+          onMouseLeave={() => setHovered(null)}
         >
           {NAV_ITEMS.map((item) => (
-            <motion.button
+            <button
               key={item}
               type="button"
               onClick={() => setActive(item)}
-              whileHover={{ y: -1.5 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
+              onMouseEnter={() => setHovered(item)}
               className="relative cursor-pointer border-0 bg-transparent p-0 outline-none"
               style={{
                 fontFamily: "'OSG Capsules', sans-serif",
@@ -160,11 +160,26 @@ export function TopBar({ initialPage = "Works" }: { initialPage?: NavItem }) {
                 lineHeight: `${FIGMA.navHeight}px`,
                 letterSpacing: "0.01em",
                 color: "#ffffff",
-                WebkitTextStroke: "1px #f02bd1",
+                WebkitTextStroke: "2px #f02bd1",
+                paintOrder: "stroke fill",
               }}
               aria-current={active === item ? "page" : undefined}
             >
-              {item}
+              {hovered === item && (
+                <SmoothCorners
+                  aria-hidden
+                  className="pointer-events-none absolute left-1/2 -translate-x-1/2"
+                  corners={{ radius: FIGMA.hoverCapsuleHeight / 2, smoothing: DEFAULT_SMOOTHING }}
+                  style={{
+                    top: FIGMA.hoverCapsuleTop - FIGMA.navTop,
+                    width: FIGMA.hoverCapsuleWidth,
+                    height: FIGMA.hoverCapsuleHeight,
+                    background: "linear-gradient(180deg, #fbe1f6 0%, rgba(251, 225, 246, 0.2) 100%)",
+                    opacity: 0.8,
+                  }}
+                />
+              )}
+              <span className="relative">{item}</span>
               {active === item && (
                 <motion.span
                   layoutId="top-bar-page-indicator"
@@ -173,12 +188,12 @@ export function TopBar({ initialPage = "Works" }: { initialPage?: NavItem }) {
                     top: FIGMA.dotTop - FIGMA.navTop,
                     width: FIGMA.dotWidth,
                     height: FIGMA.dotHeight,
-                    borderRadius: 3,
+                    clipPath: DOT_CLIP_PATH,
                     background: "#ffffff",
                   }}
                 />
               )}
-            </motion.button>
+            </button>
           ))}
         </nav>
       </div>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.hansol.osg-ui-system-sync</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Users/hansol/Documents/01 프로젝트/Personal Works/OSG/OSG Homepage/automation/sync-ui-system.sh</string>
+  </array>
+  <key>WatchPaths</key>
+  <array>
+    <string>/Users/hansol/Documents/01 프로젝트/Personal Works/OSG/OSG Homepage/UI System</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>ThrottleInterval</key>
+  <integer>10</integer>
+  <key>StandardOutPath</key>
+  <string>/tmp/com.hansol.osg-ui-system-sync.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/tmp/com.hansol.osg-ui-system-sync.err.log</string>
+</dict>
+</plist>

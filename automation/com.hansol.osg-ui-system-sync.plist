@@ -7,7 +7,8 @@
   <key>ProgramArguments</key>
   <array>
     <string>/bin/bash</string>
-    <string>/Users/hansol/Documents/01 프로젝트/Personal Works/OSG/OSG Homepage/automation/sync-ui-system.sh</string>
+    <string>-c</string>
+    <string>bash &lt; '/Users/hansol/Documents/01 프로젝트/Personal Works/OSG/OSG Homepage/automation/sync-ui-system.sh'</string>
   </array>
   <key>WatchPaths</key>
   <array>

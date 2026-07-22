@@ -60,10 +60,9 @@ const TONES = {
     hoverBottom: "#ffccf6",
     baseGloss: "rgba(251,225,246,0.4)",
     hoverGloss: "rgba(251,225,246,0.4)",
-    insetTop: "#fbe1f6",
-    insetBottom: "#f570e0",
-    hoverInsetBottom: "#f570e0",
-    insetOpacity: 0.6,
+    insetTop: "rgba(251,225,246,0.6)",
+    insetBottom: "rgba(245,112,224,0.6)",
+    hoverInsetBottom: "rgba(245,112,224,0.6)",
     baseBorder: "#f02bd1",
     baseText: "#f02bd1",
     hoverBorder: "#f02bd1",
@@ -80,10 +79,9 @@ const TONES = {
     hoverBottom: "#ffccf6",
     baseGloss: "rgba(251,225,246,0.4)",
     hoverGloss: "rgba(251,225,246,0.4)",
-    insetTop: "#fbe1f6",
-    insetBottom: "#f02bd1",
-    hoverInsetBottom: "#f570e0",
-    insetOpacity: 0.6,
+    insetTop: "rgba(251,225,246,0.6)",
+    insetBottom: "rgba(240,43,209,0.6)",
+    hoverInsetBottom: "rgba(245,112,224,0.6)",
     baseBorder: "#f02bd1",
     baseText: "#ffffff",
     hoverBorder: "#f02bd1",
@@ -219,24 +217,6 @@ function ButtonBody({
     wrapperRef: rootRef,
     effects: {
       innerBorder: { width: 1, color: chromeActive ? tone.hoverBorder : tone.baseBorder },
-      innerShadow: [
-        {
-          offsetX: 0,
-          offsetY: px(FIGMA.topInsetShadowY, height),
-          blur: px(FIGMA.topInsetShadowBlur, height),
-          spread: 0,
-          color: tone.insetTop,
-          opacity: tone.insetOpacity,
-        },
-        {
-          offsetX: 0,
-          offsetY: -px(FIGMA.bottomInsetShadowY, height),
-          blur: px(FIGMA.bottomInsetShadowBlur, height),
-          spread: 0,
-          color: chromeActive ? tone.hoverInsetBottom ?? tone.insetBottom : tone.insetBottom,
-          opacity: tone.insetOpacity,
-        },
-      ],
     },
   });
 
@@ -277,6 +257,14 @@ function ButtonBody({
             background: chromeActive ? tone.hoverGloss : tone.baseGloss,
             filter: `blur(${px(FIGMA.glossyBlur, height)}px)`,
             transition: isInstant ? "none" : `background ${transition}`,
+          }}
+        />
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            borderRadius: radius,
+            boxShadow: `inset 0 ${px(FIGMA.topInsetShadowY, height)}px ${px(FIGMA.topInsetShadowBlur, height)}px ${tone.insetTop}, inset 0 -${px(FIGMA.bottomInsetShadowY, height)}px ${px(FIGMA.bottomInsetShadowBlur, height)}px ${chromeActive ? tone.hoverInsetBottom ?? tone.insetBottom : tone.insetBottom}`,
+            transition: isInstant ? "none" : `box-shadow ${transition}`,
           }}
         />
         <SmoothCorners

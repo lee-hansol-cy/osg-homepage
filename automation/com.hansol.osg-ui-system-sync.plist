@@ -6,15 +6,10 @@
   <string>com.hansol.osg-ui-system-sync</string>
   <key>ProgramArguments</key>
   <array>
-    <string>/bin/bash</string>
-    <string>-c</string>
-    <string>bash &lt; '/Users/hansol/Library/Application Support/OSG UI System Sync/sync-ui-system.sh'</string>
+    <string>/usr/bin/osascript</string>
+    <string>-e</string>
+    <string>do shell script "export OSG_UI_SYSTEM_REPO_ROOT='/Users/hansol/Documents/01 프로젝트/Personal Works/OSG/OSG Homepage'; bash &lt; '/Users/hansol/Library/Application Support/OSG UI System Sync/sync-ui-system.sh'"</string>
   </array>
-  <key>EnvironmentVariables</key>
-  <dict>
-    <key>OSG_UI_SYSTEM_REPO_ROOT</key>
-    <string>/Users/hansol/Documents/01 프로젝트/Personal Works/OSG/OSG Homepage</string>
-  </dict>
   <key>WatchPaths</key>
   <array>
     <string>/Users/hansol/Documents/01 프로젝트/Personal Works/OSG/OSG Homepage/UI System</string>

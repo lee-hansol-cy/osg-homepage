@@ -1,7 +1,5 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { motion } from "motion/react";
-import { SmoothCorners, useSmoothCorners } from "@lisse/react";
-import { DEFAULT_SMOOTHING } from "@lisse/core";
 import buyReflect from "../../imports/BuyItNow버튼/835be69efb66b4fa2c6eec6a9cb8abaadf28d07e.png";
 import buyReflectHover from "../../imports/BuyItNow버튼호버/835be69efb66b4fa2c6eec6a9cb8abaadf28d07e.png";
 
@@ -12,7 +10,6 @@ const FIGMA = {
   radius: 160,
   fontSize: 160,
   letterSpacing: 1.6,
-  // Kept at the final, slightly-lowered optical position requested for this component.
   labelCenterY: 127.5,
   textShadowY: 30,
   textShadowBlur: 15,
@@ -50,7 +47,6 @@ interface Props {
 
 const TONES = {
   cart: {
-    // Add to Cart is permanently rendered in the Buy it Now hover palette.
     label: "Add to Cart",
     reflect: buyReflect,
     reflectHover: buyReflectHover,
@@ -150,7 +146,6 @@ function CommerceButton({ height = 54, variant = "default", onClick, kind }: Pro
       className="relative block w-full cursor-pointer border-0 bg-transparent p-0 outline-none"
       style={{ height }}
     >
-      {/* The whole Figma shadow group moves with the lifted body. */}
       <motion.div
         className="absolute inset-x-0 top-0"
         animate={{ y: active ? -lift : 0 }}
@@ -204,32 +199,23 @@ function ButtonBody({
   const isInstant = transition === "none";
   const labelOffset = px(FIGMA.labelCenterY - FIGMA.bodyHeight / 2, height);
   const chromeActive = active && !staticChrome;
-  const corners = { radius, smoothing: DEFAULT_SMOOTHING };
-  const reflectCorners = {
-    topLeft: { radius: px(FIGMA.reflectRadiusTop, height), smoothing: DEFAULT_SMOOTHING },
-    topRight: { radius: px(FIGMA.reflectRadiusTop, height), smoothing: DEFAULT_SMOOTHING },
-    bottomRight: { radius: px(FIGMA.reflectRadiusBottom, height), smoothing: DEFAULT_SMOOTHING },
-    bottomLeft: { radius: px(FIGMA.reflectRadiusBottom, height), smoothing: DEFAULT_SMOOTHING },
-  };
-  const rootRef = useRef<HTMLDivElement>(null);
-  const chromeRef = useRef<HTMLDivElement>(null);
-  useSmoothCorners(chromeRef, corners, {
-    wrapperRef: rootRef,
-    effects: {
-      innerBorder: { width: 1, color: chromeActive ? tone.hoverBorder : tone.baseBorder },
-    },
-  });
+  const reflectRadius = `${px(FIGMA.reflectRadiusTop, height)}px ${px(FIGMA.reflectRadiusTop, height)}px ${px(FIGMA.reflectRadiusBottom, height)}px ${px(FIGMA.reflectRadiusBottom, height)}px`;
 
   return (
     <div
-      ref={rootRef}
       className="absolute inset-0"
       style={{
-        /* Press feedback is deliberately instant on every breakpoint. */
         filter: pressed ? "brightness(1.04)" : "none",
       }}
     >
-      <div ref={chromeRef} className="absolute inset-0">
+      <div
+        className="absolute inset-0"
+        style={{
+          borderRadius: radius,
+          border: `1px solid ${chromeActive ? tone.hoverBorder : tone.baseBorder}`,
+          overflow: "hidden",
+        }}
+      >
         <div
           className="absolute inset-0"
           style={{
@@ -260,26 +246,28 @@ function ButtonBody({
           }}
         />
         <div
-          className="pointer-events-none absolute inset-0"
-          style={{
-            borderRadius: radius,
-            boxShadow: `inset 0 ${px(FIGMA.topInsetShadowY, height)}px ${px(FIGMA.topInsetShadowBlur, height)}px ${tone.insetTop}, inset 0 -${px(FIGMA.bottomInsetShadowY, height)}px ${px(FIGMA.bottomInsetShadowBlur, height)}px ${chromeActive ? tone.hoverInsetBottom ?? tone.insetBottom : tone.insetBottom}`,
-            transition: isInstant ? "none" : `box-shadow ${transition}`,
-          }}
-        />
-        <SmoothCorners
           className="absolute"
-          corners={reflectCorners}
           style={{
             left: horizontal(FIGMA.reflectLeft),
             top: px(FIGMA.reflectTop, height),
             width: horizontal(FIGMA.reflectWidth),
             height: px(FIGMA.reflectHeight, height),
+            borderRadius: reflectRadius,
+            overflow: "hidden",
           }}
         >
           <img alt="" src={active ? tone.reflectHover : tone.reflect} className="block size-full max-w-none object-cover" />
-        </SmoothCorners>
+        </div>
       </div>
+
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          borderRadius: radius,
+          boxShadow: `inset 0 ${px(FIGMA.topInsetShadowY, height)}px ${px(FIGMA.topInsetShadowBlur, height)}px ${tone.insetTop}, inset 0 -${px(FIGMA.bottomInsetShadowY, height)}px ${px(FIGMA.bottomInsetShadowBlur, height)}px ${chromeActive ? tone.hoverInsetBottom ?? tone.insetBottom : tone.insetBottom}`,
+          transition: isInstant ? "none" : `box-shadow ${transition}`,
+        }}
+      />
 
       <div
         className="pointer-events-none absolute inset-0 flex select-none items-center justify-center whitespace-nowrap"

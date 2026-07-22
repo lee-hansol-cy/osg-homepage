@@ -1,7 +1,5 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { motion } from "motion/react";
-import { SmoothCorners, useSmoothCorners } from "@lisse/react";
-import { DEFAULT_SMOOTHING, generateClipPath } from "@lisse/core";
 import osgLogo from "../../assets/osg-logo-topbar.png";
 
 /**
@@ -46,11 +44,6 @@ const FIGMA = {
 const NAV_ITEMS = ["Works", "Shop", "About"] as const;
 type NavItem = (typeof NAV_ITEMS)[number];
 
-const DOT_CLIP_PATH = generateClipPath(FIGMA.dotWidth, FIGMA.dotHeight, {
-  radius: FIGMA.dotHeight / 2,
-  smoothing: DEFAULT_SMOOTHING,
-});
-
 const promoStyle = {
   width: FIGMA.promoWidth,
   height: FIGMA.promoHeight,
@@ -62,22 +55,6 @@ const promoStyle = {
 export function TopBar({ initialPage = "Works" }: { initialPage?: NavItem }) {
   const [active, setActive] = useState<NavItem>(initialPage);
   const [hovered, setHovered] = useState<NavItem | null>(null);
-  const capsuleRef = useRef<HTMLDivElement>(null);
-  const chromeRef = useRef<HTMLDivElement>(null);
-  useSmoothCorners(
-    chromeRef,
-    { radius: FIGMA.capsuleHeight / 2, smoothing: DEFAULT_SMOOTHING },
-    {
-      wrapperRef: capsuleRef,
-      effects: {
-        innerBorder: { width: 1, color: "#000000" },
-        innerShadow: [
-          { offsetX: 0, offsetY: -10, blur: 15, spread: 0, color: "#f02bd1", opacity: 0.6 },
-          { offsetX: 0, offsetY: 15, blur: 15, spread: 0, color: "#fbe1f6", opacity: 0.6 },
-        ],
-      },
-    },
-  );
 
   return (
     <header className="relative w-full" style={{ height: FIGMA.areaHeight }}>
@@ -93,14 +70,18 @@ export function TopBar({ initialPage = "Works" }: { initialPage?: NavItem }) {
       />
 
       <div
-        ref={capsuleRef}
         className="absolute left-1/2 w-[min(1440px,calc(100%-480px))] min-w-[720px] -translate-x-1/2"
         style={{ top: FIGMA.capsuleTop, height: FIGMA.capsuleHeight, opacity: 0.8 }}
       >
         <div
-          ref={chromeRef}
           className="absolute inset-0"
-          style={{ background: "linear-gradient(90deg, #f02bd1 0%, #ff81ea 100%)" }}
+          style={{
+            background: "linear-gradient(90deg, #f02bd1 0%, #ff81ea 100%)",
+            borderRadius: FIGMA.capsuleHeight / 2,
+            border: "1px solid #000000",
+            boxShadow: "inset 0 -10px 15px rgba(240,43,209,0.6), inset 0 15px 15px rgba(251,225,246,0.6)",
+            overflow: "hidden",
+          }}
         >
           <div
             className="absolute"
@@ -114,19 +95,14 @@ export function TopBar({ initialPage = "Works" }: { initialPage?: NavItem }) {
               filter: `blur(${FIGMA.glowBlur}px)`,
             }}
           />
-          <SmoothCorners
+          <div
             className="absolute"
-            corners={{
-              topLeft: { radius: FIGMA.glossRadiusTop, smoothing: DEFAULT_SMOOTHING },
-              topRight: { radius: FIGMA.glossRadiusTop, smoothing: DEFAULT_SMOOTHING },
-              bottomRight: { radius: FIGMA.glossRadiusBottom, smoothing: DEFAULT_SMOOTHING },
-              bottomLeft: { radius: FIGMA.glossRadiusBottom, smoothing: DEFAULT_SMOOTHING },
-            }}
             style={{
               left: FIGMA.glossInsetX,
               right: FIGMA.glossInsetX,
               top: FIGMA.glossTop,
               height: FIGMA.glossHeight,
+              borderRadius: `${FIGMA.glossRadiusTop}px ${FIGMA.glossRadiusTop}px ${FIGMA.glossRadiusBottom}px ${FIGMA.glossRadiusBottom}px`,
               background: "linear-gradient(180deg, #fbe1f6 0%, rgba(251, 225, 246, 0.2) 100%)",
             }}
           />
@@ -166,14 +142,14 @@ export function TopBar({ initialPage = "Works" }: { initialPage?: NavItem }) {
               aria-current={active === item ? "page" : undefined}
             >
               {hovered === item && (
-                <SmoothCorners
+                <div
                   aria-hidden
                   className="pointer-events-none absolute left-1/2 -translate-x-1/2"
-                  corners={{ radius: FIGMA.hoverCapsuleHeight / 2, smoothing: DEFAULT_SMOOTHING }}
                   style={{
                     top: FIGMA.hoverCapsuleTop - FIGMA.navTop,
                     width: FIGMA.hoverCapsuleWidth,
                     height: FIGMA.hoverCapsuleHeight,
+                    borderRadius: FIGMA.hoverCapsuleHeight / 2,
                     background: "linear-gradient(180deg, #fbe1f6 0%, rgba(251, 225, 246, 0.2) 100%)",
                     opacity: 0.8,
                   }}
@@ -188,7 +164,7 @@ export function TopBar({ initialPage = "Works" }: { initialPage?: NavItem }) {
                     top: FIGMA.dotTop - FIGMA.navTop,
                     width: FIGMA.dotWidth,
                     height: FIGMA.dotHeight,
-                    clipPath: DOT_CLIP_PATH,
+                    borderRadius: FIGMA.dotHeight / 2,
                     background: "#ffffff",
                   }}
                 />

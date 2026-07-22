@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+REPO_ROOT="${OSG_UI_SYSTEM_REPO_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
 UI_SYSTEM_DIR="$REPO_ROOT/UI System"
 LOCK_DIR="$REPO_ROOT/.git/ui-system-sync.lock"
 

@@ -31,10 +31,6 @@ const FIGMA = {
   reflectHeight: 100,
   reflectRadiusTop: 70,
   reflectRadiusBottom: 30,
-  darkShadowLeft: -30,
-  darkShadowTop: 120,
-  darkShadowWidth: 2060,
-  darkShadowHeight: 300,
   reflectShadowLeft: 30,
   reflectShadowTop: 180,
   reflectShadowWidth: 1940,
@@ -72,7 +68,6 @@ const TONES = {
     hoverBorder: "#f02bd1",
     hoverText: "#f02bd1",
     reflectShadow: "rgba(251,225,246,0.8)",
-    darkShadowBlur: 60,
   },
   buy: {
     label: "Buy it Now",
@@ -92,7 +87,6 @@ const TONES = {
     hoverBorder: "#f02bd1",
     hoverText: "#f02bd1",
     reflectShadow: "rgba(251,225,246,0.8)",
-    darkShadowBlur: 60,
   },
 } as const;
 
@@ -173,19 +167,6 @@ function CommerceButton({ height = 54, variant = "default", onClick, kind }: Pro
 function HoverShadows({ active, height, tone, transition }: { active: boolean; height: number; tone: Tone; transition: string }) {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 overflow-visible">
-      <div
-        className="absolute bg-black"
-        style={{
-          left: horizontal(FIGMA.darkShadowLeft),
-          top: px(FIGMA.darkShadowTop, height),
-          width: horizontal(FIGMA.darkShadowWidth),
-          height: px(FIGMA.darkShadowHeight, height),
-          borderRadius: px(FIGMA.radius, height),
-          filter: `blur(${px(tone.darkShadowBlur, height)}px)`,
-          opacity: active ? 0.25 : 0,
-          transition: `opacity ${transition}`,
-        }}
-      />
       <div
         className="absolute"
         style={{

@@ -82,7 +82,7 @@ const TONES = {
     insetTop: "rgba(251,225,246,0.6)",
     insetBottom: "rgba(240,43,209,0.6)",
     hoverInsetBottom: "rgba(245,112,224,0.6)",
-    baseBorder: "#f02bd1",
+    baseBorder: "#000000",
     baseText: "#ffffff",
     hoverBorder: "#f02bd1",
     hoverText: "#f02bd1",

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OSG AQUA — Component Sheet</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="stage" id="stage">
+  <main class="sheet" aria-label="OSG Aqua component sheet">
+
+    <header class="masthead">
+      <div class="wordmark">OSG<em>&nbsp;AQUA</em></div>
+      <div class="meta">
+        <span class="t">UI COMPONENT SHEET</span>
+        <span class="s">1920 × 1080 · MARGIN 48 · GUTTER 32 · 6 ROWS × 16 COLS · PURE CSS GLOSS</span>
+      </div>
+      <div class="swatches" aria-hidden="true">
+        <span class="sw"><i style="background:linear-gradient(180deg,#F02BD1,#FF81EA)"></i><b>#F02BD1</b></span>
+        <span class="sw"><i style="background:linear-gradient(180deg,#FF81EA,#FBE1F6)"></i><b>#FF81EA</b></span>
+        <span class="sw"><i style="background:linear-gradient(180deg,#FBE1F6,#fff)"></i><b>#FBE1F6</b></span>
+        <span class="sw"><i style="background:linear-gradient(180deg,#B94FA8,#F02BD1)"></i><b>#B94FA8</b></span>
+        <span class="sw"><i style="background:linear-gradient(180deg,#682E5F,#B94FA8)"></i><b>#682E5F</b></span>
+      </div>
+    </header>
+
+    <section class="btn-normal">
+      <button class="aq-btn aq-btn--xl" type="button"><span class="lbl">BUY IT NOW</span></button>
+    </section>
+
+    <section class="btn-hover">
+      <button class="aq-btn aq-btn--xl aq-btn--hover" type="button"><span class="lbl">BUY IT NOW</span></button>
+    </section>
+
+    <section class="nav">
+      <div class="topbar">
+        <span class="logo">OSG</span>
+        <nav class="pills" aria-label="main">
+          <button class="aq-cap cap-blue" type="button"><span class="lbl">WORKS</span></button>
+          <button class="aq-cap cap-yellow" type="button"><span class="lbl">SHOP</span></button>
+          <button class="aq-cap cap-green" type="button"><span class="lbl">ABOUT</span></button>
+          <button class="aq-cap cap-red" type="button"><span class="lbl">LAB</span></button>
+        </nav>
+        <div class="side">
+          <button class="aq-cap cap-pale" type="button"><span class="lbl">LOGIN</span></button>
+          <button class="aq-cap" type="button"><span class="lbl">CART</span></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="sm-actions">
+      <div class="line">
+        <button class="aq-btn aq-btn--sm aq-btn--fit" type="button"><span class="lbl">ADD TO CART</span></button>
+        <button class="aq-btn aq-btn--sm aq-btn--fit aq-btn--hover" type="button"><span class="lbl">WISH</span></button>
+      </div>
+      <div class="line">
+        <button class="aq-cap cap-ghost" type="button"><span class="lbl">SEARCH</span></button>
+        <button class="aq-cap cap-pale" type="button"><span class="lbl">SHARE</span></button>
+        <button class="aq-cap" type="button"><span class="lbl">BUY</span></button>
+      </div>
+    </section>
+
+    <section class="panel product">
+      <span class="tab">PRODUCT</span>
+      <h3>ROBINSON · PINK</h3>
+      <p class="sub">folding handheld · glossy shell</p>
+      <div class="p-media">
+        <span class="device" aria-hidden="true"></span>
+        <span class="shine" aria-hidden="true"></span>
+      </div>
+      <div class="p-body">
+        <span class="name">OSG Robinson 02</span>
+        <span class="desc">candy-pink ABS · hinge edition</span>
+        <div class="p-row">
+          <span class="price">₩128,000<small>FREE SHIPPING</small></span>
+          <button class="aq-btn aq-btn--xs aq-btn--fit" type="button"><span class="lbl">BUY</span></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel form">
+      <span class="tab">FORM</span>
+      <h3>CHECKOUT FIELDS</h3>
+      <p class="sub">inset gel inputs · aqua focus ring</p>
+      <div class="field">
+        <label for="q">SEARCH</label>
+        <div class="aq-search"><span class="dot" aria-hidden="true"></span>
+          <input id="q" class="aq-input" type="text" placeholder="search the garage…">
+        </div>
+      </div>
+      <div class="field">
+        <label for="nm">NAME</label>
+        <input id="nm" class="aq-input" type="text" placeholder="Hansol Lee">
+      </div>
+      <div class="field">
+        <label>QUANTITY</label>
+        <div class="stepper">
+          <button type="button" aria-label="decrease">−</button>
+          <output>2</output>
+          <button type="button" aria-label="increase">+</button>
+        </div>
+      </div>
+      <div class="checks">
+        <span class="aq-check on"><i></i>GIFT WRAP</span>
+        <span class="aq-toggle on" role="switch" aria-checked="true" tabindex="0"></span>
+      </div>
+    </section>
+
+    <section class="panel cart">
+      <span class="tab">CART</span>
+      <h3>YOUR CART</h3>
+      <p class="sub">2 items</p>
+      <div class="c-line">
+        <span class="thumb" style="background:linear-gradient(180deg,#FF81EA,#F02BD1)"></span>
+        <span class="nm">Robinson 02<small>candy-pink</small></span>
+        <span class="pr">₩128,000</span>
+      </div>
+      <div class="c-line">
+        <span class="thumb" style="background:linear-gradient(180deg,#5BC0FF,#1E7AE0)"></span>
+        <span class="nm">Capsule Keycap<small>aqua blue</small></span>
+        <span class="pr">₩12,000</span>
+      </div>
+      <div class="c-total"><span class="t">TOTAL</span><span class="v">₩140,000</span></div>
+      <button class="aq-btn aq-btn--md aq-btn--fit" type="button"><span class="lbl">CHECKOUT</span></button>
+    </section>
+
+    <section class="panel win">
+      <span class="tab">WINDOW</span>
+      <h3>AQUA CHROME</h3>
+      <p class="sub">macOS-style title bar</p>
+      <div class="aqua-window">
+        <div class="titlebar">
+          <span class="lights" aria-hidden="true"><i class="r"></i><i class="y"></i><i class="g"></i></span>
+          <span class="ttl">OSG Store</span>
+        </div>
+        <div class="win-body">
+          <span class="bar w1"></span>
+          <span class="bar w2"></span>
+          <span class="bar w3"></span>
+          <div class="cta">
+            <button class="aq-btn aq-btn--xs aq-btn--fit" type="button"><span class="lbl">OK</span></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="parts" aria-label="portfolio parts">
+      <div class="part">
+        <div class="tags">
+          <button class="aq-cap cap-pale" style="--h:34px" type="button"><span class="lbl">3D</span></button>
+          <button class="aq-cap cap-ghost" style="--h:34px" type="button"><span class="lbl">WEB</span></button>
+          <button class="aq-cap" style="--h:34px" type="button"><span class="lbl">TOY</span></button>
+        </div>
+        <span class="cap-label">TAGS</span>
+      </div>
+      <div class="part">
+        <div class="prog" role="progressbar" aria-valuenow="66" aria-valuemin="0" aria-valuemax="100"><i></i></div>
+        <span class="cap-label">PROGRESS</span>
+      </div>
+      <div class="part">
+        <span class="avatar" aria-hidden="true"></span>
+        <span class="cap-label">AVATAR</span>
+      </div>
+      <div class="part">
+        <div class="stars" aria-label="rating 4 of 5">
+          <i></i><i></i><i></i><i></i><i class="off"></i>
+        </div>
+        <span class="cap-label">RATING</span>
+      </div>
+      <div class="part">
+        <div class="pager" aria-label="pagination">
+          <i>‹</i><i class="cur">1</i><i>2</i><i>3</i><i>›</i>
+        </div>
+        <span class="cap-label">PAGER</span>
+      </div>
+      <div class="part">
+        <span class="badge" aria-label="3 notifications"></span>
+        <span class="cap-label">BADGE</span>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+function fit(){
+  var s=document.getElementById('stage');
+  var k=Math.min((innerWidth-32)/1920,(innerHeight-32)/1080,1);
+  s.style.transform='scale('+k+')';
+}
+addEventListener('resize',fit);fit();
+</script>
+</body>
+</html>

@@ -3,37 +3,106 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OSG AQUA — Component Sheet</title>
+<title>OSG AQUA — Component Book</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="stage" id="stage">
-  <main class="sheet" aria-label="OSG Aqua component sheet">
 
-    <header class="masthead">
-      <div class="wordmark">OSG<em>&nbsp;AQUA</em></div>
-      <div class="meta">
-        <span class="t">UI COMPONENT SHEET</span>
-        <span class="s">1920 × 1080 · MARGIN 48 · GUTTER 32 · 6 ROWS × 16 COLS · PURE CSS GLOSS</span>
-      </div>
-      <div class="swatches" aria-hidden="true">
-        <span class="sw"><i style="background:linear-gradient(180deg,#F02BD1,#FF81EA)"></i><b>#F02BD1</b></span>
-        <span class="sw"><i style="background:linear-gradient(180deg,#FF81EA,#FBE1F6)"></i><b>#FF81EA</b></span>
-        <span class="sw"><i style="background:linear-gradient(180deg,#FBE1F6,#fff)"></i><b>#FBE1F6</b></span>
-        <span class="sw"><i style="background:linear-gradient(180deg,#B94FA8,#F02BD1)"></i><b>#B94FA8</b></span>
-        <span class="sw"><i style="background:linear-gradient(180deg,#682E5F,#B94FA8)"></i><b>#682E5F</b></span>
-      </div>
-    </header>
+<nav class="index">
+  <span class="brand">OSG AQUA</span>
+  <a href="#s1">01 Buttons</a>
+  <a href="#s2">02 Navigation</a>
+  <a href="#s3">03 Cards</a>
+  <a href="#s4">04 Forms</a>
+  <a href="#s5">05 Commerce</a>
+  <a href="#s6">06 Feedback</a>
+  <a href="#s7">07 Data</a>
+</nav>
 
-    <section class="btn-normal">
+<div class="book">
+
+<div class="frame" id="s1">
+  <div class="sheet-tag"><b>SHEET 01</b><span>BUTTONS &amp; ACTIONS</span></div>
+  <section class="sheet" aria-label="Buttons and actions">
+    <div style="grid-column:1/9;grid-row:1/3;display:flex;align-items:center;justify-content:center">
       <button class="aq-btn aq-btn--xl" type="button"><span class="lbl">BUY IT NOW</span></button>
-    </section>
-
-    <section class="btn-hover">
+    </div>
+    <div style="grid-column:9/17;grid-row:1/3;display:flex;align-items:center;justify-content:center">
       <button class="aq-btn aq-btn--xl aq-btn--hover" type="button"><span class="lbl">BUY IT NOW</span></button>
-    </section>
+    </div>
 
-    <section class="nav">
+    <div class="panel" style="grid-column:1/9;grid-row:3/5">
+      <span class="tab">SIZE SCALE</span>
+      <h3>ONE RATIO, EVERY SIZE</h3>
+      <p class="sub">--h drives every internal dimension</p>
+      <div class="grow" style="gap:16px">
+        <div class="rowline"><button class="aq-btn aq-btn--lg aq-btn--fit" type="button"><span class="lbl">ADD TO CART</span></button></div>
+        <div class="rowline"><button class="aq-btn aq-btn--md aq-btn--fit" type="button"><span class="lbl">CHECKOUT</span></button></div>
+        <div class="rowline">
+          <button class="aq-btn aq-btn--sm aq-btn--fit" type="button"><span class="lbl">WISH</span></button>
+          <button class="aq-btn aq-btn--xs aq-btn--fit" type="button"><span class="lbl">BUY</span></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-column:9/17;grid-row:3/5">
+      <span class="tab">STATES</span>
+      <h3>INTERACTION STATES</h3>
+      <p class="sub">normal · hover · pressed · disabled</p>
+      <div class="grow" style="gap:14px">
+        <div class="rowline"><button class="aq-btn aq-btn--sm aq-btn--fit" type="button"><span class="lbl">NORMAL</span></button>
+        <button class="aq-btn aq-btn--sm aq-btn--fit aq-btn--hover" type="button"><span class="lbl">HOVER</span></button></div>
+        <div class="rowline"><button class="aq-btn aq-btn--sm aq-btn--fit aq-btn--active" type="button"><span class="lbl">PRESSED</span></button>
+        <button class="aq-btn aq-btn--sm aq-btn--fit aq-btn--disabled" type="button" disabled><span class="lbl">DISABLED</span></button></div>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-column:1/9;grid-row:5/7">
+      <span class="tab">ICON + FAB</span>
+      <h3>GEL ICON BUTTONS</h3>
+      <p class="sub">css-drawn glyphs · floating action</p>
+      <div class="grow">
+        <div class="rowline" style="gap:16px">
+          <button class="aq-icon" type="button" aria-label="cart"><span class="ic ic-cart"></span></button>
+          <button class="aq-icon icon-blue" type="button" aria-label="search"><span class="ic ic-search"></span></button>
+          <button class="aq-icon icon-red" type="button" aria-label="like"><span class="ic ic-heart"></span></button>
+          <button class="aq-icon icon-green" type="button" aria-label="play"><span class="ic ic-play"></span></button>
+          <button class="aq-icon icon-yellow" type="button" aria-label="star"><span class="ic ic-star"></span></button>
+          <button class="aq-icon icon-pale" type="button" aria-label="close"><span class="ic ic-x"></span></button>
+        </div>
+        <div class="rowline" style="gap:20px">
+          <button class="aq-fab" type="button" aria-label="add"><span class="ic ic-plus"></span></button>
+          <span class="cap-label">FLOATING ACTION — hovers to rotate</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-column:9/17;grid-row:5/7">
+      <span class="tab">GROUPS</span>
+      <h3>SEGMENTED · SPLIT · CAPSULES</h3>
+      <p class="sub">choice controls and colorways</p>
+      <div class="grow" style="gap:14px">
+        <div class="rowline">
+          <div class="aq-seg"><button class="on" type="button">GRID</button><button type="button">LIST</button><button type="button">GALLERY</button></div>
+        </div>
+        <div class="rowline" style="gap:10px;flex-wrap:wrap">
+          <button class="aq-cap" type="button"><span class="lbl">PINK</span></button>
+          <button class="aq-cap cap-blue" type="button"><span class="lbl">BLUE</span></button>
+          <button class="aq-cap cap-yellow" type="button"><span class="lbl">YELLOW</span></button>
+          <button class="aq-cap cap-green" type="button"><span class="lbl">GREEN</span></button>
+          <button class="aq-cap cap-red" type="button"><span class="lbl">RED</span></button>
+          <button class="aq-cap cap-pale" type="button"><span class="lbl">PALE</span></button>
+          <button class="aq-cap cap-ghost" type="button"><span class="lbl">GHOST</span></button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="frame" id="s2">
+  <div class="sheet-tag"><b>SHEET 02</b><span>NAVIGATION</span></div>
+  <section class="sheet" aria-label="Navigation">
+    <div style="grid-column:1/17;grid-row:1/3;display:flex;align-items:center;justify-content:center">
       <div class="topbar">
         <span class="logo">OSG</span>
         <nav class="pills" aria-label="main">
@@ -47,28 +116,83 @@
           <button class="aq-cap" type="button"><span class="lbl">CART</span></button>
         </div>
       </div>
-    </section>
+    </div>
 
-    <section class="sm-actions">
-      <div class="line">
-        <button class="aq-btn aq-btn--sm aq-btn--fit" type="button"><span class="lbl">ADD TO CART</span></button>
-        <button class="aq-btn aq-btn--sm aq-btn--fit aq-btn--hover" type="button"><span class="lbl">WISH</span></button>
+    <div class="panel" style="grid-column:1/9;grid-row:3/5">
+      <span class="tab">TABS + CRUMB</span>
+      <h3>AQUA TABS &amp; BREADCRUMB</h3>
+      <p class="sub">gel tab highlight · path trail</p>
+      <div class="grow" style="gap:18px">
+        <div class="aq-tabs">
+          <span class="t on">OVERVIEW</span><span class="t">SPECS</span><span class="t">REVIEWS</span><span class="t">Q&amp;A</span>
+        </div>
+        <div class="aq-crumb">
+          <span>HOME</span><span class="sep">▶</span><span>SHOP</span><span class="sep">▶</span><span>HANDHELD</span><span class="sep">▶</span><span class="here">ROBINSON 02</span>
+        </div>
       </div>
-      <div class="line">
-        <button class="aq-cap cap-ghost" type="button"><span class="lbl">SEARCH</span></button>
-        <button class="aq-cap cap-pale" type="button"><span class="lbl">SHARE</span></button>
-        <button class="aq-cap" type="button"><span class="lbl">BUY</span></button>
-      </div>
-    </section>
+    </div>
 
-    <section class="panel product">
+    <div class="panel" style="grid-column:9/13;grid-row:3/7">
+      <span class="tab">MENU</span>
+      <h3>DROPDOWN</h3>
+      <p class="sub">hover rows · shortcut · danger</p>
+      <div class="grow">
+        <div class="aq-menu">
+          <div class="mi"><span class="ic ic-plus"></span>New Project<span class="kbd">⌘N</span></div>
+          <div class="mi"><span class="ic ic-cart"></span>Open Cart<span class="kbd">⌘O</span></div>
+          <div class="mi"><span class="ic ic-star"></span>Add to Wishlist</div>
+          <div class="md"></div>
+          <div class="mi"><span class="ic ic-check"></span>Share…</div>
+          <div class="mi"><span class="ic ic-search"></span>Search Garage</div>
+          <div class="md"></div>
+          <div class="mi danger"><span class="ic ic-x"></span>Remove Item<span class="kbd">⌫</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-column:13/17;grid-row:3/7">
+      <span class="tab">SIDEBAR</span>
+      <h3>NAV ITEMS</h3>
+      <p class="sub">selected · hover · count badge</p>
+      <div class="grow" style="gap:8px">
+        <div class="aq-navitem on"><span class="ic ic-star"></span>Dashboard</div>
+        <div class="aq-navitem"><span class="ic ic-cart"></span>Orders<span class="cnt">12</span></div>
+        <div class="aq-navitem"><span class="ic ic-heart"></span>Wishlist<span class="cnt">4</span></div>
+        <div class="aq-navitem"><span class="ic ic-search"></span>Browse</div>
+        <div class="aq-navitem"><span class="ic ic-info"></span>Settings</div>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-column:1/9;grid-row:5/7">
+      <span class="tab">STEPS + PAGER</span>
+      <h3>PROGRESS PATH</h3>
+      <p class="sub">wizard steps · pagination</p>
+      <div class="grow" style="gap:20px">
+        <div class="aq-steps">
+          <div class="st done"><span class="n">✓</span><span class="l">CART</span></div>
+          <div class="bar fill"></div>
+          <div class="st done"><span class="n">✓</span><span class="l">SHIP</span></div>
+          <div class="bar fill"></div>
+          <div class="st now"><span class="n">3</span><span class="l">PAY</span></div>
+          <div class="bar"></div>
+          <div class="st"><span class="n">4</span><span class="l">DONE</span></div>
+        </div>
+        <div class="rowline" style="justify-content:center">
+          <div class="pager"><i>‹</i><i class="cur">1</i><i>2</i><i>3</i><i>4</i><i>›</i></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="frame" id="s3">
+  <div class="sheet-tag"><b>SHEET 03</b><span>CARDS &amp; CONTENT</span></div>
+  <section class="sheet" aria-label="Cards and content">
+    <div class="panel product" style="grid-column:1/5;grid-row:1/4">
       <span class="tab">PRODUCT</span>
       <h3>ROBINSON · PINK</h3>
-      <p class="sub">folding handheld · glossy shell</p>
-      <div class="p-media">
-        <span class="device" aria-hidden="true"></span>
-        <span class="shine" aria-hidden="true"></span>
-      </div>
+      <p class="sub">folding handheld</p>
+      <div class="p-media"><span class="device"></span><span class="shine"></span></div>
       <div class="p-body">
         <span class="name">OSG Robinson 02</span>
         <span class="desc">candy-pink ABS · hinge edition</span>
@@ -77,117 +201,402 @@
           <button class="aq-btn aq-btn--xs aq-btn--fit" type="button"><span class="lbl">BUY</span></button>
         </div>
       </div>
-    </section>
+    </div>
 
-    <section class="panel form">
-      <span class="tab">FORM</span>
-      <h3>CHECKOUT FIELDS</h3>
-      <p class="sub">inset gel inputs · aqua focus ring</p>
-      <div class="field">
-        <label for="q">SEARCH</label>
-        <div class="aq-search"><span class="dot" aria-hidden="true"></span>
-          <input id="q" class="aq-input" type="text" placeholder="search the garage…">
+    <div class="panel aq-project" style="grid-column:5/9;grid-row:1/4">
+      <span class="tab">PORTFOLIO</span>
+      <h3>PROJECT TILE</h3>
+      <p class="sub">work showcase</p>
+      <div class="p-media"><span class="cube"></span><span class="shine"></span></div>
+      <div class="p-body">
+        <span class="name">Aqua Interface Kit</span>
+        <span class="desc">3D · CSS · 2026</span>
+        <div class="p-row">
+          <div class="tags"><button class="aq-cap cap-pale" style="--h:30px" type="button"><span class="lbl">3D</span></button><button class="aq-cap cap-ghost" style="--h:30px" type="button"><span class="lbl">WEB</span></button></div>
+          <button class="aq-icon icon-pale" style="--h:40px" type="button" aria-label="view"><span class="ic ic-play"></span></button>
         </div>
       </div>
-      <div class="field">
-        <label for="nm">NAME</label>
-        <input id="nm" class="aq-input" type="text" placeholder="Hansol Lee">
+    </div>
+
+    <div class="panel aq-profile" style="grid-column:9/13;grid-row:1/4">
+      <span class="tab">PROFILE</span>
+      <span class="avatar" style="margin-top:8px"></span>
+      <span class="nm">Hansol Lee</span>
+      <span class="role">DESIGNER · OFFSET GARAGE</span>
+      <div class="stats">
+        <span><b>42</b><i>WORKS</i></span><span><b>1.2k</b><i>FANS</i></span><span><b>87</b><i>SOLD</i></span>
       </div>
-      <div class="field">
-        <label>QUANTITY</label>
-        <div class="stepper">
-          <button type="button" aria-label="decrease">−</button>
-          <output>2</output>
-          <button type="button" aria-label="increase">+</button>
+      <button class="aq-btn aq-btn--sm aq-btn--fit" type="button"><span class="lbl">FOLLOW</span></button>
+    </div>
+
+    <div class="panel" style="grid-column:13/17;grid-row:1/4;padding:0;border:none;background:none;box-shadow:none;overflow:visible">
+      <div class="aq-pricing hot" style="height:100%">
+        <span class="ribbon">BEST</span>
+        <span class="tier">COLLECTOR</span>
+        <span class="amt">₩49,000<small>/year</small></span>
+        <ul>
+          <li>Early access drops</li>
+          <li>Members-only colorways</li>
+          <li>Free shipping always</li>
+          <li>Annual sticker pack</li>
+        </ul>
+        <button class="aq-btn aq-btn--sm aq-btn--fit" style="align-self:center;margin-top:auto" type="button"><span class="lbl">JOIN</span></button>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-column:1/9;grid-row:4/7">
+      <span class="tab">STATS</span>
+      <h3>METRIC CARDS</h3>
+      <p class="sub">big number · trend</p>
+      <div class="grow">
+        <div class="rowline" style="gap:14px">
+          <div class="aq-stat"><div class="v">1<em>,</em>284</div><div class="k">VISITORS TODAY</div><span class="trend up">▲ 12%</span></div>
+          <div class="aq-stat"><div class="v"><em>₩</em>8.4M</div><div class="k">MONTH SALES</div><span class="trend up">▲ 8%</span></div>
+          <div class="aq-stat"><div class="v">97<em>%</em></div><div class="k">SATISFACTION</div><span class="trend dn">▼ 1%</span></div>
         </div>
       </div>
-      <div class="checks">
-        <span class="aq-check on"><i></i>GIFT WRAP</span>
-        <span class="aq-toggle on" role="switch" aria-checked="true" tabindex="0"></span>
-      </div>
-    </section>
+    </div>
 
-    <section class="panel cart">
-      <span class="tab">CART</span>
-      <h3>YOUR CART</h3>
-      <p class="sub">2 items</p>
-      <div class="c-line">
-        <span class="thumb" style="background:linear-gradient(180deg,#FF81EA,#F02BD1)"></span>
-        <span class="nm">Robinson 02<small>candy-pink</small></span>
-        <span class="pr">₩128,000</span>
-      </div>
-      <div class="c-line">
-        <span class="thumb" style="background:linear-gradient(180deg,#5BC0FF,#1E7AE0)"></span>
-        <span class="nm">Capsule Keycap<small>aqua blue</small></span>
-        <span class="pr">₩12,000</span>
-      </div>
-      <div class="c-total"><span class="t">TOTAL</span><span class="v">₩140,000</span></div>
-      <button class="aq-btn aq-btn--md aq-btn--fit" type="button"><span class="lbl">CHECKOUT</span></button>
-    </section>
-
-    <section class="panel win">
-      <span class="tab">WINDOW</span>
-      <h3>AQUA CHROME</h3>
-      <p class="sub">macOS-style title bar</p>
-      <div class="aqua-window">
-        <div class="titlebar">
-          <span class="lights" aria-hidden="true"><i class="r"></i><i class="y"></i><i class="g"></i></span>
-          <span class="ttl">OSG Store</span>
+    <div class="panel" style="grid-column:9/17;grid-row:4/7">
+      <span class="tab">REVIEW</span>
+      <h3>TESTIMONIAL</h3>
+      <p class="sub">avatar · stars · quote bubble</p>
+      <div class="grow" style="gap:16px">
+        <div class="aq-review">
+          <span class="avatar av-blue"></span>
+          <div class="bubble">
+            <div class="stars" style="margin-bottom:6px"><i></i><i></i><i></i><i></i><i></i></div>
+            <p class="q">The gloss on this thing is unreal. Feels like a toy from a future that never happened.</p>
+            <p class="who">MINA · SEOUL</p>
+          </div>
         </div>
-        <div class="win-body">
-          <span class="bar w1"></span>
-          <span class="bar w2"></span>
-          <span class="bar w3"></span>
-          <div class="cta">
-            <button class="aq-btn aq-btn--xs aq-btn--fit" type="button"><span class="lbl">OK</span></button>
+        <div class="aq-review">
+          <span class="avatar av-green"></span>
+          <div class="bubble">
+            <div class="stars" style="margin-bottom:6px"><i></i><i></i><i></i><i></i><i class="off"></i></div>
+            <p class="q">Hinge is satisfying to flip. Shipping was fast too.</p>
+            <p class="who">JUN · BUSAN</p>
           </div>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
+</div>
 
-    <section class="parts" aria-label="portfolio parts">
-      <div class="part">
+<div class="frame" id="s4">
+  <div class="sheet-tag"><b>SHEET 04</b><span>FORMS &amp; INPUTS</span></div>
+  <section class="sheet" aria-label="Forms and inputs">
+    <div class="panel" style="grid-column:1/7;grid-row:1/4">
+      <span class="tab">TEXT</span>
+      <h3>SEARCH · INPUT · TEXTAREA</h3>
+      <p class="sub">inset gel fields · pink focus ring</p>
+      <div class="grow" style="gap:14px">
+        <div class="aq-search"><span class="dot"></span><input class="aq-input" type="text" placeholder="search the garage…"></div>
+        <input class="aq-input" type="text" placeholder="your name">
+        <textarea class="aq-input" placeholder="leave a message…"></textarea>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-column:7/12;grid-row:1/4">
+      <span class="tab">CHOICE</span>
+      <h3>SELECT · CHECK · RADIO · TOGGLE</h3>
+      <p class="sub">gel selection controls</p>
+      <div class="grow" style="gap:14px">
+        <div class="aq-select"><select><option>Ship to — Seoul</option><option>Busan</option><option>Jeju</option></select></div>
+        <div class="checks">
+          <span class="aq-check on"><i></i>GIFT WRAP</span>
+          <span class="aq-check"><i></i>RECEIPT</span>
+        </div>
+        <div class="checks">
+          <span class="aq-radio on"><i></i>CARD</span>
+          <span class="aq-radio"><i></i>TRANSFER</span>
+        </div>
+        <div class="checks"><span class="aq-toggle on" role="switch" aria-checked="true" tabindex="0"></span><span style="font-size:12px;letter-spacing:.06em;color:var(--well)">PUSH NOTIFICATIONS</span></div>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-column:12/17;grid-row:1/4">
+      <span class="tab">RANGE</span>
+      <h3>SLIDER · STEPPER · RATING</h3>
+      <p class="sub">gel thumb · quantity · stars</p>
+      <div class="grow" style="gap:18px">
+        <div class="aq-slider"><div class="rail"><div class="fillbar"></div></div><div class="knob"></div></div>
+        <div class="rowline"><div class="stepper"><button type="button">−</button><output>2</output><button type="button">+</button></div><span class="cap-label">QUANTITY</span></div>
+        <div class="rowline"><div class="aq-rate"><span class="ic-star"></span><span class="ic-star"></span><span class="ic-star"></span><span class="ic-star"></span><span class="ic-star off"></span></div><span class="cap-label">TAP TO RATE</span></div>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-column:1/7;grid-row:4/7">
+      <span class="tab">UPLOAD</span>
+      <h3>DROPZONE</h3>
+      <p class="sub">dashed gel target</p>
+      <div class="grow">
+        <div class="aq-drop">
+          <span class="ic ic-plus"></span>
+          <span class="t">DROP ARTWORK HERE</span>
+          <span class="s">PNG · SVG up to 10MB — or click to browse</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-column:7/17;grid-row:4/7">
+      <span class="tab">COMPOSED</span>
+      <h3>LOGIN FORM</h3>
+      <p class="sub">fields + controls assembled</p>
+      <div class="grow" style="gap:14px">
+        <div class="rowline" style="gap:14px">
+          <div style="flex:1"><input class="aq-input" type="text" placeholder="email"></div>
+          <div style="flex:1"><input class="aq-input" type="password" placeholder="password"></div>
+        </div>
+        <div class="rowline" style="justify-content:space-between">
+          <div class="checks"><span class="aq-check on"><i></i>KEEP ME SIGNED IN</span></div>
+          <button class="aq-btn aq-btn--md aq-btn--fit" type="button"><span class="lbl">SIGN IN</span></button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="frame" id="s5">
+  <div class="sheet-tag"><b>SHEET 05</b><span>COMMERCE</span></div>
+  <section class="sheet" aria-label="Commerce">
+    <div class="panel" style="grid-column:1/6;grid-row:1/7">
+      <span class="tab">CART</span>
+      <h3>YOUR CART</h3>
+      <p class="sub">2 items</p>
+      <div class="grow" style="justify-content:flex-start;gap:0">
+        <div class="c-line">
+          <span class="thumb" style="background:linear-gradient(180deg,#FF81EA,#F02BD1)"></span>
+          <span class="nm">Robinson 02<small>candy-pink</small></span>
+          <span class="pr">₩128,000</span>
+        </div>
+        <div class="c-line">
+          <span class="thumb" style="background:linear-gradient(180deg,#5BC0FF,#1E7AE0)"></span>
+          <span class="nm">Capsule Keycap<small>aqua blue</small></span>
+          <span class="pr">₩12,000</span>
+        </div>
+        <div class="c-total"><span class="t">TOTAL</span><span class="v">₩140,000</span></div>
+        <button class="aq-btn aq-btn--md aq-btn--fit" style="align-self:center" type="button"><span class="lbl">CHECKOUT</span></button>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-column:6/11;grid-row:1/4">
+      <span class="tab">LINE ITEM</span>
+      <h3>EDITABLE ROW</h3>
+      <p class="sub">thumb · name · qty · price</p>
+      <div class="grow" style="gap:12px">
+        <div class="c-line" style="border:none;padding:0">
+          <span class="thumb" style="background:linear-gradient(180deg,#7BE24F,#2EB82E)"></span>
+          <span class="nm">Hinge Sticker Set<small>12 pcs</small></span>
+          <div class="stepper" style="width:120px;height:34px"><button type="button">−</button><output>1</output><button type="button">+</button></div>
+          <span class="pr">₩8,000</span>
+        </div>
+        <div class="aq-coupon">
+          <input class="aq-input" type="text" placeholder="coupon code">
+          <button class="aq-btn aq-btn--sm aq-btn--fit" type="button"><span class="lbl">APPLY</span></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-column:6/11;grid-row:4/7">
+      <span class="tab">OPTIONS</span>
+      <h3>SHIPPING · PAYMENT</h3>
+      <p class="sub">selectable gel rows</p>
+      <div class="grow" style="gap:10px">
+        <div class="aq-option on"><span class="aq-radio on"><i></i></span><span class="txt"><b>Standard Delivery</b><small>2–3 business days</small></span><span class="amt">FREE</span></div>
+        <div class="aq-option"><span class="aq-radio"><i></i></span><span class="txt"><b>Express</b><small>next day</small></span><span class="amt">₩4,000</span></div>
+        <div class="aq-option"><span class="aq-radio"><i></i></span><span class="txt"><b>Card Payment</b><small>Visa · Master</small></span><span class="amt"></span></div>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-column:11/17;grid-row:1/7">
+      <span class="tab">RECEIPT</span>
+      <h3>ORDER SUMMARY</h3>
+      <p class="sub">ticket with notches</p>
+      <div class="grow" style="gap:16px">
+        <div class="aq-receipt">
+          <div class="rl"><span>Robinson 02 × 1</span><span>₩128,000</span></div>
+          <div class="rl"><span>Capsule Keycap × 1</span><span>₩12,000</span></div>
+          <div class="rl"><span>Shipping</span><span>FREE</span></div>
+          <div class="rl"><span>Coupon AQUA10</span><span style="color:var(--green-b)">−₩14,000</span></div>
+          <div class="rl total"><span>TOTAL</span><span>₩126,000</span></div>
+        </div>
+        <div class="aq-steps">
+          <div class="st done"><span class="n">✓</span><span class="l">CART</span></div>
+          <div class="bar fill"></div>
+          <div class="st done"><span class="n">✓</span><span class="l">SHIP</span></div>
+          <div class="bar fill"></div>
+          <div class="st now"><span class="n">3</span><span class="l">PAY</span></div>
+          <div class="bar"></div>
+          <div class="st"><span class="n">4</span><span class="l">DONE</span></div>
+        </div>
+        <button class="aq-btn aq-btn--lg aq-btn--fit" style="align-self:center" type="button"><span class="lbl">PAY NOW</span></button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="frame" id="s6">
+  <div class="sheet-tag"><b>SHEET 06</b><span>FEEDBACK &amp; OVERLAYS</span></div>
+  <section class="sheet" aria-label="Feedback and overlays">
+    <div class="panel" style="grid-column:1/7;grid-row:1/4">
+      <span class="tab">TOASTS</span>
+      <h3>STATUS MESSAGES</h3>
+      <p class="sub">success · error · info · warning</p>
+      <div class="grow" style="gap:12px">
+        <div class="aq-toast toast-ok"><span class="ic ic-check"></span><span class="msg">Order placed<small>we'll email your receipt</small></span></div>
+        <div class="aq-toast toast-err"><span class="ic ic-x"></span><span class="msg">Payment failed<small>check your card details</small></span></div>
+        <div class="aq-toast toast-info"><span class="ic ic-info"></span><span class="msg">New drop soon<small>follow to get notified</small></span></div>
+        <div class="aq-toast toast-warn"><span class="ic ic-info"></span><span class="msg">Low stock<small>only 3 left</small></span></div>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-column:7/12;grid-row:1/4">
+      <span class="tab">BADGES + TIP</span>
+      <h3>COUNTS &amp; TOOLTIP</h3>
+      <p class="sub">notification dot · hover bubble</p>
+      <div class="grow" style="gap:22px">
+        <div class="rowline" style="gap:24px">
+          <span class="badge" data-n="3"></span>
+          <span class="badge" data-n="12" style="background:linear-gradient(180deg,#5BC0FF,#1E7AE0)"></span>
+          <span class="badge" data-n="99+" style="background:linear-gradient(180deg,#7BE24F,#2EB82E)"></span>
+        </div>
+        <div class="rowline" style="justify-content:center"><span class="aq-tip">Free shipping over ₩50,000</span></div>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-column:12/17;grid-row:1/7">
+      <span class="tab">DIALOG</span>
+      <h3>AQUA WINDOW</h3>
+      <p class="sub">traffic lights · gel title bar</p>
+      <div class="grow">
+        <div class="aqua-window" style="flex:1">
+          <div class="titlebar">
+            <span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span>
+            <span class="ttl">Confirm Order</span>
+          </div>
+          <div class="win-body" style="justify-content:center;align-items:center;gap:14px">
+            <p style="font-size:14px;letter-spacing:.04em;color:var(--well);text-align:center">Pay ₩126,000 now?<br><span style="font-size:11px;color:var(--pink-shadow)">You can cancel within 24h.</span></p>
+            <div class="rowline" style="gap:12px">
+              <button class="aq-btn aq-btn--sm aq-btn--fit cap-ghost" style="background:linear-gradient(180deg,#fff,#FBE1F6);color:var(--pink);border-color:rgba(240,43,209,.55)" type="button"><span class="lbl">LATER</span></button>
+              <button class="aq-btn aq-btn--sm aq-btn--fit" type="button"><span class="lbl">PAY</span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-column:1/12;grid-row:4/7">
+      <span class="tab">LOADING</span>
+      <h3>PROGRESS · SPINNER · SKELETON · EMPTY</h3>
+      <p class="sub">waiting states, all css</p>
+      <div class="grow">
+        <div class="rowline" style="gap:28px;align-items:center">
+          <div class="colstack" style="gap:8px;flex:1;max-width:340px">
+            <div class="prog" style="width:100%"><i style="width:66%"></i></div>
+            <div class="prog" style="width:100%"><i style="width:30%;background:linear-gradient(180deg,#5BC0FF,#1E7AE0)"></i></div>
+          </div>
+          <div class="aq-spin"></div>
+          <div class="colstack" style="gap:8px;flex:1;max-width:280px">
+            <div class="aq-skel" style="height:14px;width:100%"></div>
+            <div class="aq-skel" style="height:14px;width:72%"></div>
+            <div class="aq-skel" style="height:14px;width:86%"></div>
+          </div>
+        </div>
+        <div class="aq-empty" style="padding:10px">
+          <span class="glyph"><span class="ic ic-cart"></span></span>
+          <span class="t">YOUR CART IS EMPTY</span>
+          <span class="s">Browse the garage and find something shiny.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="frame" id="s7">
+  <div class="sheet-tag"><b>SHEET 07</b><span>DATA &amp; PORTFOLIO</span></div>
+  <section class="sheet" aria-label="Data and portfolio">
+    <div class="panel" style="grid-column:1/9;grid-row:1/4">
+      <span class="tab">TABLE</span>
+      <h3>ORDER TABLE</h3>
+      <p class="sub">zebra rows · status pills</p>
+      <div class="grow">
+        <table class="aq-table">
+          <tr><th>ORDER</th><th>ITEM</th><th>STATUS</th><th>TOTAL</th></tr>
+          <tr><td>#1042</td><td>Robinson 02</td><td><span class="pill pill-g">SHIPPED</span></td><td>₩128,000</td></tr>
+          <tr><td>#1041</td><td>Capsule Keycap</td><td><span class="pill pill-y">PENDING</span></td><td>₩12,000</td></tr>
+          <tr><td>#1040</td><td>Hinge Stickers</td><td><span class="pill pill-p">PACKING</span></td><td>₩8,000</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-column:9/17;grid-row:1/4">
+      <span class="tab">IDENTITY</span>
+      <h3>TAGS · AVATARS · SOCIAL</h3>
+      <p class="sub">chips · group stack · icon links</p>
+      <div class="grow" style="gap:20px">
         <div class="tags">
-          <button class="aq-cap cap-pale" style="--h:34px" type="button"><span class="lbl">3D</span></button>
-          <button class="aq-cap cap-ghost" style="--h:34px" type="button"><span class="lbl">WEB</span></button>
           <button class="aq-cap" style="--h:34px" type="button"><span class="lbl">TOY</span></button>
+          <button class="aq-cap cap-blue" style="--h:34px" type="button"><span class="lbl">AQUA</span></button>
+          <button class="aq-cap cap-yellow" style="--h:34px" type="button"><span class="lbl">Y2K</span></button>
+          <button class="aq-cap cap-green" style="--h:34px" type="button"><span class="lbl">CSS</span></button>
+          <button class="aq-cap cap-pale" style="--h:34px" type="button"><span class="lbl">PINK</span></button>
         </div>
-        <span class="cap-label">TAGS</span>
-      </div>
-      <div class="part">
-        <div class="prog" role="progressbar" aria-valuenow="66" aria-valuemin="0" aria-valuemax="100"><i></i></div>
-        <span class="cap-label">PROGRESS</span>
-      </div>
-      <div class="part">
-        <span class="avatar" aria-hidden="true"></span>
-        <span class="cap-label">AVATAR</span>
-      </div>
-      <div class="part">
-        <div class="stars" aria-label="rating 4 of 5">
-          <i></i><i></i><i></i><i></i><i class="off"></i>
+        <div class="rowline" style="gap:28px">
+          <div class="aq-avatars">
+            <span class="avatar"></span><span class="avatar av-blue"></span><span class="avatar av-green"></span><span class="avatar av-yellow"></span><span class="more">+8</span>
+          </div>
+          <div class="aq-social">
+            <button class="aq-icon icon-pale" style="--h:44px" type="button" aria-label="link"><span class="ic ic-heart"></span></button>
+            <button class="aq-icon icon-blue" style="--h:44px" type="button" aria-label="link"><span class="ic ic-search"></span></button>
+            <button class="aq-icon" style="--h:44px" type="button" aria-label="link"><span class="ic ic-star"></span></button>
+          </div>
         </div>
-        <span class="cap-label">RATING</span>
       </div>
-      <div class="part">
-        <div class="pager" aria-label="pagination">
-          <i>‹</i><i class="cur">1</i><i>2</i><i>3</i><i>›</i>
-        </div>
-        <span class="cap-label">PAGER</span>
-      </div>
-      <div class="part">
-        <span class="badge" aria-label="3 notifications"></span>
-        <span class="cap-label">BADGE</span>
-      </div>
-    </section>
+    </div>
 
-  </main>
+    <div class="panel" style="grid-column:1/9;grid-row:4/7">
+      <span class="tab">TIMELINE + SKILLS</span>
+      <h3>PROCESS &amp; METER</h3>
+      <p class="sub">gel progress · milestones</p>
+      <div class="grow">
+        <div class="rowline" style="gap:32px;align-items:flex-start">
+          <div class="aq-time" style="flex:1">
+            <div class="ev"><b>Concept &amp; sketch</b><small>MAR 2026</small></div>
+            <div class="ev"><b>3D modeling</b><small>APR 2026</small></div>
+            <div class="ev"><b>UI system</b><small>JUL 2026</small></div>
+          </div>
+          <div class="colstack" style="flex:1;gap:14px">
+            <div class="aq-skill"><div class="top"><span>CSS SCULPTING</span><b>92%</b></div><div class="track"><div class="fillbar" style="width:92%"></div></div></div>
+            <div class="aq-skill"><div class="top"><span>3D / CSG</span><b>78%</b></div><div class="track"><div class="fillbar" style="width:78%"></div></div></div>
+            <div class="aq-skill"><div class="top"><span>MOTION</span><b>64%</b></div><div class="track"><div class="fillbar" style="width:64%"></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-column:9/17;grid-row:4/7">
+      <span class="tab">DIVIDERS</span>
+      <h3>SECTION BREAKS</h3>
+      <p class="sub">gem divider · spacing rhythm</p>
+      <div class="grow" style="gap:22px">
+        <div class="aq-div"><span class="gem"></span></div>
+        <div class="rowline" style="justify-content:center;gap:14px">
+          <button class="aq-btn aq-btn--md aq-btn--fit" type="button"><span class="lbl">EXPLORE WORKS</span></button>
+          <button class="aq-btn aq-btn--md aq-btn--fit aq-btn--hover" type="button"><span class="lbl">VISIT SHOP</span></button>
+        </div>
+        <div class="aq-div"><span class="gem"></span></div>
+      </div>
+    </div>
+  </section>
+</div>
+
 </div>
 
 <script>
 function fit(){
-  var s=document.getElementById('stage');
-  var k=Math.min((innerWidth-32)/1920,(innerHeight-32)/1080,1);
-  s.style.transform='scale('+k+')';
+  var k=Math.min((innerWidth-40)/1920,1);
+  document.documentElement.style.setProperty('--k',k);
 }
 addEventListener('resize',fit);fit();
 </script>
